@@ -4,6 +4,24 @@ import Foundation
 enum SoundSynth {
     private static let sampleRate = 22050
 
+    /// A short two-part detent, with a lower pitch when switching off.
+    static func switchData(powerOn: Bool) -> Data {
+        let duration = 0.075
+        let n = Int(Double(sampleRate) * duration)
+        let pitch = powerOn ? 1750.0 : 1420.0
+        var samples = [Int16](repeating: 0, count: n)
+        for i in 0..<n {
+            let t = Double(i) / Double(sampleRate)
+            let attack = min(1, t / 0.0006)
+            let click = (sin(2 * .pi * pitch * t) * 0.38 + sin(2 * .pi * pitch * 2.31 * t) * 0.13) * exp(-t * 190) * attack
+            let detentTime = max(0, t - 0.011)
+            let detent = t > 0.011 ? sin(2 * .pi * 480 * detentTime) * exp(-detentTime * 130) * 0.22 : 0
+            let body = sin(2 * .pi * 210 * t) * exp(-t * 105) * 0.10 * attack
+            samples[i] = Int16(max(-1, min(1, click + detent + body)) * 32767)
+        }
+        return wav(samples)
+    }
+
     /// A short motor startup with a rising pitch.
     static func wakeData() -> Data {
         let duration = 0.35

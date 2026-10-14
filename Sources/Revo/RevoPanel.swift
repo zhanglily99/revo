@@ -1,7 +1,8 @@
 import AppKit
 
 final class RevoPanel: NSPanel {
-    static let size = MachineArtwork.size
+    static let size = NSSize(width: MachineArtwork.size.width * 0.9,
+                             height: MachineArtwork.size.height * 0.9)
     init() {
         super.init(contentRect: NSRect(origin: .zero, size: Self.size), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         isOpaque = false; backgroundColor = .clear; level = .floating

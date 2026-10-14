@@ -1,7 +1,5 @@
 # Revo
 
-**A little less.**
-
 A tiny native macOS desktop companion that turns letting go of files into a small, tactile ritual. Turn Revo on, drop a file into the slot, and watch it become paper scraps. The real file moves to macOS Trash and remains recoverable.
 
 <p align="center">
@@ -11,7 +9,7 @@ A tiny native macOS desktop companion that turns letting go of files into a smal
 
 ## The little machine
 
-Clear glass, soft silver, layered edge reflections, and a native on/off switch. The enclosure uses a live NSVisualEffectView backdrop so the desktop shows through the glass. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo.
+Clear glass, soft silver, layered edge reflections, and a native on/off switch. The enclosure uses a live NSVisualEffectView backdrop so the desktop shows through the glass. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 252 points.
 
 - Documents become narrow paper strips.
 - Photos use a thumbnail and break into confetti.
@@ -30,15 +28,15 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 
 | Gesture | Action |
 | --- | --- |
-| Turn the power switch on | Open the inlet and enable file drops |
-| Turn the power switch off | Reject file drops and cancel waiting jobs |
+| Turn the power switch on | Open the inlet and enable file drops, with a soft mechanical click |
+| Turn the power switch off | Reject file drops and cancel waiting jobs, with a lower-pitched click |
 | Drop one or more files while on | Move them to Trash and play the animation after success |
 | Drag the machine body | Reposition it; the location is remembered |
 | Right-click → Try It, while on | Preview each animation without moving files |
 | Right-click → Undo Last File | Restore the most recently recycled file during this session |
 | Right-click → Clear Paper Scraps | Clear the visual scraps inside the machine |
 | Menu bar → Show Revo | Bring back the hidden machine |
-| Menu bar → Sound | Toggle mechanical sound effects |
+| Menu bar → Sound | Toggle mechanical sound effects, including switch clicks |
 
 Undo refuses to overwrite a file that already occupies the original location. Files can also be recovered through Finder's Trash. Revo has no permanent-delete or empty-Trash action.
 

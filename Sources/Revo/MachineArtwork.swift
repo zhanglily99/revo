@@ -78,8 +78,7 @@ enum MachineArtwork {
         gradient(cassette, [(0xFFFFFF, 0.95), (0xE3E8EE, 0.90), (0xB3BEC9, 0.70), (0xF6F9FC, 0.92)], -72)
         stroke(cassette, 0xFFFFFF, 0.85, 0.8)
         line(CGPoint(x: 54, y: 153), CGPoint(x: 186, y: 153), color: 0x667887, alpha: 0.28, width: 0.7)
-        text("Revo", NSPoint(x: 48, y: 165), .systemFont(ofSize: 13, weight: .semibold), 0x3B4653)
-        text("a little less.", NSPoint(x: 130, y: 167), .systemFont(ofSize: 7, weight: .medium), 0x7B8793)
+        text("Revo", NSPoint(x: 48, y: 163), NSFont(name: "Georgia-Italic", size: 17) ?? .systemFont(ofSize: 17), 0x3B4653)
 
         // The top has a shallow perspective and a clear machined edge.
         let top = NSBezierPath()

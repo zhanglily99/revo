@@ -31,9 +31,13 @@ final class RevoView: NSView {
     private var reducedMotion: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
     private lazy var motorSound = SoundSynth.shredData()
     private lazy var finishSound = SoundSynth.thudData()
+    private lazy var switchOnSound = SoundSynth.switchData(powerOn: true)
+    private lazy var switchOffSound = SoundSynth.switchData(powerOn: false)
 
     override init(frame: NSRect) {
         super.init(frame: frame)
+        // Keep one design coordinate system while AppKit scales rendering and hit testing.
+        bounds = CGRect(origin: .zero, size: MachineArtwork.size)
         wantsLayer = true
         layer?.masksToBounds = false
         registerForDraggedTypes([.fileURL])
@@ -115,7 +119,11 @@ final class RevoView: NSView {
         backdrop.layer?.backgroundColor = reduce ? MachineArtwork.color(0xE6EBF1).cgColor : NSColor.clear.cgColor
     }
 
-    @objc private func togglePower() { setPower(!isPoweredOn) }
+    @objc private func togglePower() {
+        let enabled = !isPoweredOn
+        setPower(enabled)
+        play(enabled ? switchOnSound : switchOffSound, volume: 0.45)
+    }
 
     func setPower(_ enabled: Bool) {
         queue.setPower(enabled)
