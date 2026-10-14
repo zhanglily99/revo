@@ -6,12 +6,16 @@ final class RevoView: NSView {
     private enum State { case idle, ready, working }
     private struct Job { let url: URL; let style: ShredStyle; let point: CGPoint; let demo: Bool }
     private var state = State.idle
-    private var queue: [Job] = []
+    private var queue = PowerQueue<Job>()
+    var isPoweredOn: Bool { queue.isPoweredOn }
     private let trash = TrashService()
     private let machine = CALayer()
     private let feeder = CALayer()
     private let scraps = CALayer()
-    private let button = CALayer()
+    private let powerSwitch = NSSwitch(frame: MachineArtwork.switchFrame)
+    private let powerLabel = CATextLayer()
+    private let shutter = CALayer()
+    private let backdrop = GlassBackdrop(frame: MachineArtwork.shell)
     private let led = CALayer()
     private let glow = CALayer()
     private let caption = CATextLayer()
@@ -19,7 +23,6 @@ final class RevoView: NSView {
     private var players: [AVAudioPlayer] = []
     private var hovered = false
     private var dragActive = false
-    private var pointerDown: CGPoint?
     private var messageVersion = 0
     private var mute: Bool {
         get { UserDefaults.standard.bool(forKey: "muted") }
@@ -35,17 +38,23 @@ final class RevoView: NSView {
         layer?.masksToBounds = false
         registerForDraggedTypes([.fileURL])
         setupLayers()
-        setAccessibilityElement(true)
-        setAccessibilityRole(.button)
+        setAccessibilityElement(false)
+        setAccessibilityRole(.group)
         setAccessibilityLabel("Revo")
-        setAccessibilityHelp("Drop files to move them to Trash. Press the orange button for a demo. Right-click for undo and settings.")
-        toolTip = "Drop a file. Let it go. Right-click to undo."
+        setAccessibilityHelp("Turn on the power switch before dropping files. Revo starts off each time it opens. Right-click for undo and settings.")
+        toolTip = "Revo is off. Turn on the switch to accept files."
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(updateTransparency), name: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil)
+        updateTransparency()
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
     override var mouseDownCanMoveWindow: Bool { false }
 
     private func setupLayers() {
-        guard let layer else { return }
+        addSubview(backdrop)
+        let artwork = ArtworkHost(frame: bounds)
+        artwork.wantsLayer = true
+        addSubview(artwork)
+        guard let layer = artwork.layer else { return }
         machine.frame = bounds; layer.addSublayer(machine)
         let body = CALayer(); body.frame = bounds; body.contents = MachineArtwork.image(); machine.addSublayer(body)
         // The feed is clipped above the physical opening, not hidden by a full image.
@@ -54,11 +63,24 @@ final class RevoView: NSView {
         scraps.frame = MachineArtwork.window; scraps.cornerRadius = 10; scraps.masksToBounds = true; machine.addSublayer(scraps)
         let glass = CALayer(); glass.frame = bounds; glass.contents = MachineArtwork.image(glass: true); machine.addSublayer(glass)
         glow.frame = CGRect(x: 50, y: 188, width: 140, height: 1.5); glow.cornerRadius = 0.75
-        glow.backgroundColor = MachineArtwork.color(0xDBEBB0).cgColor; glow.opacity = 0
-        glow.shadowColor = MachineArtwork.color(0xD6E9A4).cgColor; glow.shadowRadius = 4; glow.shadowOpacity = 0.6; machine.addSublayer(glow)
-        button.frame = CGRect(x: 178, y: 160, width: 26, height: 26); button.contents = MachineArtwork.button(); machine.addSublayer(button)
-        led.frame = CGRect(x: 161, y: 172, width: 4, height: 4); led.cornerRadius = 2
-        led.backgroundColor = MachineArtwork.color(0x879C68).cgColor; machine.addSublayer(led)
+        glow.backgroundColor = MachineArtwork.color(0xDCEBFF).cgColor; glow.opacity = 0
+        glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 4; glow.shadowOpacity = 0.6; machine.addSublayer(glow)
+        shutter.frame = CGRect(x: 47, y: 189, width: 146, height: 7)
+        shutter.contents = MachineArtwork.shutter(); machine.addSublayer(shutter)
+        led.frame = CGRect(x: 48, y: 70, width: 4, height: 4); led.cornerRadius = 2
+        machine.addSublayer(led)
+        powerLabel.frame = CGRect(x: 59, y: 65, width: 84, height: 15)
+        powerLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold); powerLabel.fontSize = 8
+        powerLabel.contentsScale = NSScreen.main?.backingScaleFactor ?? 2
+        powerLabel.foregroundColor = MachineArtwork.color(0x465361).cgColor
+        machine.addSublayer(powerLabel)
+        powerSwitch.target = self; powerSwitch.action = #selector(togglePower)
+        powerSwitch.appearance = NSAppearance(named: .aqua)
+        powerSwitch.setAccessibilityLabel("Revo power")
+        powerSwitch.setAccessibilityHelp("Off rejects file drops. On allows files to move to Trash.")
+        powerSwitch.toolTip = "Turn on to accept files"
+        addSubview(powerSwitch)
+        updatePowerPresentation()
         caption.frame = CGRect(x: 8, y: 20, width: 224, height: 19)
         caption.font = NSFont.systemFont(ofSize: 10, weight: .medium); caption.fontSize = 10
         caption.alignmentMode = .center; caption.contentsScale = NSScreen.main?.backingScaleFactor ?? 2
@@ -74,26 +96,49 @@ final class RevoView: NSView {
     }
     override func mouseEntered(with event: NSEvent) {
         hovered = true
-        if state == .idle { showMessage("Drop a file. Let it go.", persistent: true) }
+        if state == .idle { showMessage(isPoweredOn ? "On · Drop a file to let it go." : "Off · Turn on to accept files.", persistent: true) }
     }
     override func mouseExited(with event: NSEvent) {
         hovered = false
         if state == .idle { caption.opacity = 0 }
     }
     override func mouseDown(with event: NSEvent) {
-        let p = convert(event.locationInWindow, from: nil)
-        pointerDown = p
-        if button.frame.insetBy(dx: -5, dy: -5).contains(p) { spring(button, key: "transform.scale", from: 1, to: 0.91) }
-        else { window?.performDrag(with: event); (window as? RevoPanel)?.savePosition() }
-    }
-    override func mouseUp(with event: NSEvent) {
-        spring(button, key: "transform.scale", from: 0.91, to: 1)
-        let point = convert(event.locationInWindow, from: nil)
-        if let down = pointerDown, button.frame.insetBy(dx: -5, dy: -5).contains(down), button.frame.insetBy(dx: -5, dy: -5).contains(point) { demo(.document) }
-        pointerDown = nil
+        window?.performDrag(with: event)
         (window as? RevoPanel)?.savePosition()
     }
-    override func accessibilityPerformPress() -> Bool { demo(.document); return true }
+
+    deinit { NSWorkspace.shared.notificationCenter.removeObserver(self) }
+
+    @objc private func updateTransparency() {
+        let reduce = NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
+        backdrop.alphaValue = reduce ? 1 : 0.68
+        backdrop.layer?.backgroundColor = reduce ? MachineArtwork.color(0xE6EBF1).cgColor : NSColor.clear.cgColor
+    }
+
+    @objc private func togglePower() { setPower(!isPoweredOn) }
+
+    func setPower(_ enabled: Bool) {
+        queue.setPower(enabled)
+        dragActive = false
+        if state == .ready {
+            setState(.idle)
+            spring(machine, key: "transform.translation.y", from: 3, to: 0)
+        }
+        updatePowerPresentation()
+        showMessage(enabled ? "On · Drop a file to let it go." : state == .working ? "Turning off · Finishing current file." : "Off · File drops are disabled.")
+    }
+
+    private func updatePowerPresentation() {
+        powerSwitch.state = isPoweredOn ? .on : .off
+        powerLabel.string = isPoweredOn ? "ON" : "OFF"
+        toolTip = isPoweredOn ? "Drop a file to move it to Trash. Right-click to undo." : "Revo is off. Turn on the switch to accept files."
+        CATransaction.begin(); CATransaction.setAnimationDuration(reducedMotion ? 0 : 0.22)
+        shutter.opacity = isPoweredOn ? 0 : 1
+        shutter.transform = CATransform3DMakeScale(1, isPoweredOn ? 0.08 : 1, 1)
+        glow.opacity = isPoweredOn && state != .idle ? 1 : 0
+        led.backgroundColor = MachineArtwork.color(isPoweredOn ? (state == .working ? 0x5A9CD9 : 0x519382) : 0x8E99A6).cgColor
+        CATransaction.commit()
+    }
 
     private func spring(_ target: CALayer, key: String, from: CGFloat, to: CGFloat) {
         CATransaction.begin(); CATransaction.setDisableActions(true); target.setValue(to, forKeyPath: key); CATransaction.commit()
@@ -114,10 +159,7 @@ final class RevoView: NSView {
     }
     private func setState(_ next: State) {
         state = next
-        CATransaction.begin(); CATransaction.setAnimationDuration(0.2)
-        glow.opacity = next == .idle ? 0 : 1
-        led.backgroundColor = MachineArtwork.color(next == .working ? 0xE6A04B : next == .ready ? 0xC5E797 : 0x879C68).cgColor
-        CATransaction.commit()
+        updatePowerPresentation()
     }
 
     private func urls(_ info: NSDraggingInfo) -> [URL] {
@@ -127,7 +169,7 @@ final class RevoView: NSView {
         return unique.filter { candidate in !unique.contains { parent in parent != candidate && candidate.path.hasPrefix(parent.path + "/") } }
     }
     private func dragOperation(_ sender: NSDraggingInfo) -> NSDragOperation {
-        guard !urls(sender).isEmpty else { return [] }
+        guard isPoweredOn, !urls(sender).isEmpty else { return [] }
         let allowed = sender.draggingSourceOperationMask
         // Generic is appropriate for a destination that performs its own filesystem action.
         if allowed.contains(.generic) { return .generic }
@@ -135,6 +177,10 @@ final class RevoView: NSView {
         return []
     }
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        guard isPoweredOn else {
+            showMessage("Off · Turn on before dropping files.")
+            return []
+        }
         let operation = dragOperation(sender); guard !operation.isEmpty else { return [] }
         dragActive = true
         if state != .working { setState(.ready); spring(machine, key: "transform.translation.y", from: 0, to: 3) }
@@ -151,18 +197,27 @@ final class RevoView: NSView {
         let files = urls(sender); guard !files.isEmpty, !dragOperation(sender).isEmpty else { return false }
         dragActive = false
         let p = convert(sender.draggingLocation, from: nil)
-        queue.append(contentsOf: files.map { Job(url: $0, style: ShredStyle.classify($0), point: p, demo: false) })
-        next(); return true
+        return acceptFiles(files, at: p)
+    }
+
+    /// Both the drop handler and the integration check enter through this interlock.
+    @discardableResult
+    func acceptFiles(_ files: [URL], at point: CGPoint) -> Bool {
+        guard isPoweredOn, !files.isEmpty else { return false }
+        let jobs = files.map { Job(url: $0, style: ShredStyle.classify($0), point: point, demo: false) }
+        guard queue.append(contentsOf: jobs) else { return false }
+        next()
+        return true
     }
 
     func demo(_ style: ShredStyle) {
-        guard state != .working else { return }
-        queue.append(Job(url: URL(fileURLWithPath: "/demo-paper.txt"), style: style, point: CGPoint(x: 120, y: 246), demo: true))
+        guard isPoweredOn, state != .working else { return }
+        queue.append(contentsOf: [Job(url: URL(fileURLWithPath: "/demo-paper.txt"), style: style, point: CGPoint(x: 120, y: 246), demo: true)])
         next()
     }
     private func next() {
-        guard state != .working, !queue.isEmpty else { return }
-        let job = queue.removeFirst(); setState(.working)
+        guard state != .working, let job = queue.takeNext() else { return }
+        setState(.working)
         spring(machine, key: "transform.translation.y", from: 3, to: 0)
         showMessage(job.demo ? "Try a sheet. Let it go." : "Moving to Trash…", persistent: true)
         // Build the preview before recycling, while the original still exists.
@@ -252,9 +307,9 @@ final class RevoView: NSView {
         play(finishSound, volume: 0.12)
         setState(.idle)
         if !reducedMotion { spring(machine, key: "transform.translation.y", from: -1.2, to: 0) }
-        showMessage(job.demo ? "Demo only. No files moved." : "Moved to Trash · Right-click to undo")
+        showMessage(isPoweredOn ? (job.demo ? "Demo only. No files moved." : "Moved to Trash · Right-click to undo") : "Off · File drops are disabled.")
         if !queue.isEmpty { next() }
-        else if dragActive { setState(.ready) }
+        else if dragActive && isPoweredOn { setState(.ready) }
     }
     private func play(_ data: Data, volume: Float) {
         guard !mute, let player = try? AVAudioPlayer(data: data) else { return }
@@ -267,6 +322,9 @@ final class RevoView: NSView {
         func item(_ title: String, _ action: Selector, enabled: Bool = true) -> NSMenuItem {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: ""); item.target = self; item.isEnabled = enabled; menu.addItem(item); return item
         }
+        let power = item(isPoweredOn ? "Turn Off" : "Turn On", #selector(togglePower))
+        power.state = isPoweredOn ? .on : .off
+        menu.addItem(.separator())
         let count = NSMenuItem(title: "Recycled today: \(Stats.todayCount)", action: nil, keyEquivalent: ""); count.isEnabled = false; menu.addItem(count)
         menu.addItem(.separator())
         _ = item("Undo Last File", #selector(undo), enabled: trash.canUndo && state != .working)
@@ -275,7 +333,7 @@ final class RevoView: NSView {
         for (index, title) in ["Document · Paper Strips", "Photo · Confetti", "Audio · Waveform", "Video · Film Strips", "Folder · Stacked Sheets"].enumerated() {
             let option = NSMenuItem(title: title, action: #selector(demoMenu(_:)), keyEquivalent: ""); option.tag = index; option.target = self; submenu.addItem(option)
         }
-        demos.submenu = submenu; demos.isEnabled = state != .working; menu.addItem(demos)
+        demos.submenu = submenu; demos.isEnabled = isPoweredOn && state != .working; menu.addItem(demos)
         _ = item("Clear Paper Scraps", #selector(clearScraps), enabled: state != .working)
         menu.addItem(.separator())
         let sound = item("Sound", #selector(toggleSound)); sound.state = mute ? .off : .on
