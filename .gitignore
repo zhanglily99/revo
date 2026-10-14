@@ -1,0 +1,8 @@
+.build/
+.swiftpm/
+build/
+.DS_Store
+
+# Superseded local artwork; the app is now drawn in code.
+Resources/artwork/
+Resources/shredder.png
