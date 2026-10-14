@@ -91,7 +91,3 @@ Preview mode renders off, on, feeding, and finished screenshots using demo sheet
 | `Stats.swift` | Local daily count |
 | `SelfTest.swift` | Disposable file-operation checks |
 | `Preview.swift` | Screenshot and icon export |
-
-## Inspiration
-
-[Tendedero](https://github.com/alejandrobujan/tendedero) inspired the small native-app approach and gesture-first interaction. Revo uses its own code and artwork.
