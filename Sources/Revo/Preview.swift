@@ -11,6 +11,7 @@ enum Preview {
         ctx.draw(MachineArtwork.image(), in: CGRect(origin: .zero, size: MachineArtwork.size))
         ctx.draw(MachineArtwork.image(glass: true), in: CGRect(origin: .zero, size: MachineArtwork.size))
         ctx.draw(MachineArtwork.shutter(), in: MachineArtwork.inlet)
+        ctx.draw(MachineArtwork.counter(count: 0, powered: false), in: MachineArtwork.counterFrame)
         ctx.draw(MachineArtwork.button(), in: MachineArtwork.switchFrame)
         if let image = ctx.makeImage(), let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
             try? data.write(to: URL(fileURLWithPath: path))

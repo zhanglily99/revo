@@ -11,11 +11,10 @@ final class RevoView: NSView {
     private let machine = CALayer()
     private let feeder = CALayer()
     private let scraps = CALayer()
-    private let powerSwitch = NSSwitch(frame: MachineArtwork.switchFrame)
-    private let powerLabel = CALayer()
+    private let powerSwitch = PowerSwitch(frame: MachineArtwork.switchFrame)
+    private let counter = CALayer()
     private let shutter = CALayer()
     private let backdrop = GlassBackdrop(frame: MachineArtwork.glassFrame)
-    private let led = CALayer()
     private let glow = CALayer()
     private let caption = CATextLayer()
     private var pile: [CALayer] = []
@@ -66,11 +65,8 @@ final class RevoView: NSView {
         glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 2; glow.shadowOpacity = 0.35; machine.addSublayer(glow)
         shutter.frame = MachineArtwork.inlet
         shutter.contents = MachineArtwork.shutter(); machine.addSublayer(shutter)
-        let controlCenterY = MachineArtwork.switchFrame.midY
-        led.frame = CGRect(x: 106, y: controlCenterY - 2, width: 4, height: 4); led.cornerRadius = 2
-        machine.addSublayer(led)
-        powerLabel.frame = CGRect(x: 116, y: controlCenterY - 7.5, width: 37, height: 15)
-        machine.addSublayer(powerLabel)
+        counter.frame = MachineArtwork.counterFrame
+        machine.addSublayer(counter)
         powerSwitch.target = self; powerSwitch.action = #selector(togglePower)
         powerSwitch.appearance = NSAppearance(named: .aqua)
         powerSwitch.setAccessibilityLabel("Revo power")
@@ -93,7 +89,6 @@ final class RevoView: NSView {
     }
     override func mouseEntered(with event: NSEvent) {
         hovered = true
-        if state == .idle { showMessage(isPoweredOn ? "On · Drop a file to let it go." : "Off · Turn on to accept files.", persistent: true) }
     }
     override func mouseExited(with event: NSEvent) {
         hovered = false
@@ -127,19 +122,26 @@ final class RevoView: NSView {
             spring(machine, key: "transform.translation.y", from: 3, to: 0)
         }
         updatePowerPresentation()
-        showMessage(enabled ? "On · Drop a file to let it go." : state == .working ? "Turning off · Finishing current file." : "Off · File drops are disabled.")
+        if state == .idle { messageVersion += 1; caption.opacity = 0 }
     }
 
     private func updatePowerPresentation() {
-        powerSwitch.state = isPoweredOn ? .on : .off
-        powerLabel.contents = MachineArtwork.powerLabel(isPoweredOn: isPoweredOn)
+        powerSwitch.setPower(isPoweredOn, animated: !reducedMotion)
+        updateCounter()
         toolTip = isPoweredOn ? "Drop a file to move it to Trash. Right-click to undo." : "Revo is off. Turn on the switch to accept files."
         CATransaction.begin(); CATransaction.setAnimationDuration(reducedMotion ? 0 : 0.22)
         shutter.opacity = isPoweredOn ? 0 : 1
         shutter.transform = CATransform3DMakeScale(1, isPoweredOn ? 0.08 : 1, 1)
         glow.opacity = isPoweredOn && state != .idle ? 1 : 0
-        led.backgroundColor = MachineArtwork.color(isPoweredOn ? (state == .working ? 0x5A9CD9 : 0x519382) : 0x8E99A6).cgColor
         CATransaction.commit()
+    }
+
+    private func updateCounter() {
+        CATransaction.begin(); CATransaction.setDisableActions(true)
+        counter.contents = MachineArtwork.counter(count: Stats.todayCount, powered: isPoweredOn)
+        CATransaction.commit()
+        powerSwitch.toolTip = "Revo power · Files recycled today: \(Stats.todayCount)"
+        powerSwitch.setAccessibilityHelp("Off rejects file drops. On allows files to move to Trash. Files recycled today: \(Stats.todayCount).")
     }
 
     private func spring(_ target: CALayer, key: String, from: CGFloat, to: CGFloat) {
@@ -180,7 +182,7 @@ final class RevoView: NSView {
     }
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         guard isPoweredOn else {
-            showMessage("Off · Turn on before dropping files.")
+            showMessage("Turn on before dropping files.")
             return []
         }
         let operation = dragOperation(sender); guard !operation.isEmpty else { return [] }
@@ -229,12 +231,11 @@ final class RevoView: NSView {
             guard let self else { return }
             switch result {
             case .success:
-                Stats.increment(); self.animate(job, image: sprite)
+                Stats.increment(); self.updateCounter(); self.animate(job, image: sprite)
             case .failure(let error):
                 self.setState(.idle)
                 self.showMessage("Could not move to Trash")
                 self.toolTip = error.localizedDescription
-                self.led.backgroundColor = MachineArtwork.color(0xC47657).cgColor
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.next() }
             }
         }
@@ -313,7 +314,7 @@ final class RevoView: NSView {
         play(.finish, volume: 0.12)
         setState(.idle)
         if !reducedMotion { spring(machine, key: "transform.translation.y", from: -1.2, to: 0) }
-        showMessage(isPoweredOn ? (job.demo ? "Demo only. No files moved." : "Moved to Trash · Right-click to undo") : "Off · File drops are disabled.")
+        showMessage(job.demo ? "Demo only. No files moved." : "Moved to Trash · Right-click to undo")
         if !queue.isEmpty { next() }
         else if dragActive && isPoweredOn { setState(.ready) }
     }
@@ -362,7 +363,7 @@ final class RevoView: NSView {
         trash.undo { [weak self] result in
             guard let self else { return }; self.setState(.idle)
             switch result {
-            case .success: Stats.decrement(); self.showMessage("Restored to its original location.")
+            case .success: Stats.decrement(); self.updateCounter(); self.showMessage("Restored to its original location.")
             case .failure(let error): self.showMessage("Could not restore · Open Trash"); self.toolTip = error.localizedDescription
             }
             self.next()

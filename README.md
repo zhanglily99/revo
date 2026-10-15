@@ -9,7 +9,7 @@ A tiny native macOS desktop companion that turns letting go of files into a smal
 
 ## The little machine
 
-A solid silver head, clear glass enclosure, layered edge reflections, and a native on/off switch. A gently elevated viewpoint reveals the receding top plane and a continuous metal front face. The metal head has softly rolled shoulders and a continuous front face above a taller glass enclosure. Larger file previews align with the inlet before feeding into the glass enclosure. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Its side walls and floor recede toward the same vanishing point as the metal top, and paper scraps settle across that floor. Reduce Transparency replaces the glass with a solid native backdrop. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 297 points.
+A solid silver head, clear glass enclosure, layered edge reflections, and a compact tactile power switch. Its raised silver thumb slides into a soft mint-green track when on and returns to silver-gray when off. A recessed seven-segment display beside it shows the number of files successfully recycled today, including across app launches. Undo reduces the count; demos and failed operations never increase it. A gently elevated viewpoint reveals the receding top plane and a continuous metal front face. The metal head has softly rolled shoulders and a continuous front face above a taller glass enclosure. Larger file previews align with the inlet before feeding into the glass enclosure. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Its side walls and floor recede toward the same vanishing point as the metal top, and paper scraps settle across that floor. Reduce Transparency replaces the glass with a solid native backdrop. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 297 points.
 
 - Documents become narrow paper strips.
 - Photos use a thumbnail and break into confetti.
@@ -83,6 +83,7 @@ Preview mode renders off, on, feeding, and finished screenshots using demo sheet
 | `RevoView.swift` | Drag and drop, animation queue, menus, and feedback |
 | `MachineArtwork.swift` | Translucent enclosure, metal inlet, and shutter |
 | `GlassBackdrop.swift` | Native diffusion inside the lower glass and accessibility fallback |
+| `PowerSwitch.swift` | Tactile switch artwork, native button tracking, and accessible power control |
 | `PowerQueue.swift` | Default-off interlock and waiting-job cancellation |
 | `PaperSprite.swift` | File-specific paper previews and bounded photo thumbnails |
 | `TrashService.swift` | System Trash operations and conflict-safe undo |

@@ -1,5 +1,4 @@
 import AppKit
-import CoreText
 
 /// An opaque aluminum head sits above a clear enclosure with refractive edges.
 /// The aperture and animation masks share the same physical coordinates.
@@ -12,7 +11,8 @@ enum MachineArtwork {
     static let shell = CGRect(x: 23, y: 49, width: 194, height: 206)
     static let glassFrame = CGRect(x: 23, y: 49, width: 194, height: 120)
     static let inlet = CGRect(x: 47, y: slotY - 2, width: 146, height: 6)
-    static let switchFrame = CGRect(x: 162, y: 180, width: 40, height: 24)
+    static let switchFrame = CGRect(x: 165, y: 181, width: 36, height: 22)
+    static let counterFrame = CGRect(x: 114, y: 183, width: 42, height: 18)
 
     static func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> NSColor {
         NSColor(calibratedRed: CGFloat((hex >> 16) & 255) / 255,
@@ -312,21 +312,40 @@ enum MachineArtwork {
         NSGraphicsContext.restoreGraphicsState()
     }
 
-    /// Center the visible glyphs, rather than the font's line box, on the control axis.
-    static func powerLabel(isPoweredOn: Bool) -> CGImage {
-        let labelSize = NSSize(width: 37, height: 15)
-        return raster(labelSize) {
-            let font = NSFont.systemFont(ofSize: 8, weight: .semibold)
-            let attributes: [NSAttributedString.Key: Any] = [
-                NSAttributedString.Key(kCTFontAttributeName as String): CTFontCreateWithName(font.fontName as CFString, font.pointSize, nil),
-                NSAttributedString.Key(kCTForegroundColorAttributeName as String): color(0x465361).cgColor
-            ]
-            let line = CTLineCreateWithAttributedString(NSAttributedString(string: isPoweredOn ? "ON" : "OFF", attributes: attributes))
-            let ink = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
-            let context = NSGraphicsContext.current!.cgContext
-            context.textMatrix = .identity
-            context.textPosition = CGPoint(x: -ink.minX, y: (labelSize.height - ink.height) / 2 - ink.minY)
-            CTLineDraw(line, context)
+    /// A recessed, four-digit instrument display keeps the count legible at desktop scale.
+    static func counter(count: Int, powered: Bool) -> CGImage {
+        raster(counterFrame.size) {
+            let bezel = rounded(CGRect(x: 0.5, y: 0.5, width: 41, height: 17), 4)
+            gradient(bezel, [(0x8E9CA6, 1), (0xF4F7F9, 1)], -90)
+            let screen = rounded(CGRect(x: 1.6, y: 1.7, width: 38.8, height: 14.6), 2.7)
+            gradient(screen, [(0x121D1D, 1), (0x283534, 1)], -90)
+            stroke(screen, 0x40504F, 0.7, 0.5)
+            let digits = String(format: "%04d", max(0, count))
+            let pitch = min(7, 32 / CGFloat(digits.count))
+            let digitWidth = pitch - 2.4
+            let startX = (42 - (CGFloat(digits.count) * pitch - 2.4)) / 2
+            let segments: [[Int]] = [[0,1,2,4,5,6], [2,5], [0,2,3,4,6], [0,2,3,5,6],
+                                     [1,2,3,5], [0,1,3,5,6], [0,1,3,4,5,6], [0,2,5],
+                                     [0,1,2,3,4,5,6], [0,1,2,3,5,6]]
+            for (index, character) in digits.enumerated() {
+                let x = startX + CGFloat(index) * pitch
+                let w = digitWidth
+                let endpoints: [(CGPoint, CGPoint)] = [
+                    (CGPoint(x:x+0.6,y:13.2), CGPoint(x:x+w-0.6,y:13.2)),
+                    (CGPoint(x:x,y:12.4), CGPoint(x:x,y:9.7)),
+                    (CGPoint(x:x+w,y:12.4), CGPoint(x:x+w,y:9.7)),
+                    (CGPoint(x:x+0.6,y:9), CGPoint(x:x+w-0.6,y:9)),
+                    (CGPoint(x:x,y:8.3), CGPoint(x:x,y:5.6)),
+                    (CGPoint(x:x+w,y:8.3), CGPoint(x:x+w,y:5.6)),
+                    (CGPoint(x:x+0.6,y:4.8), CGPoint(x:x+w-0.6,y:4.8))]
+                let active = segments[character.wholeNumberValue ?? 0]
+                for (segment, points) in endpoints.enumerated() {
+                    line(points.0, points.1, color: powered ? 0xBAE5CE : 0xA6BEB3,
+                         alpha: active.contains(segment) ? 0.95 : 0.065, width: 0.7)
+                }
+            }
+            // A faint upper reflection sits behind the digits rather than washing them out.
+            line(CGPoint(x:5,y:15.2), CGPoint(x:37,y:15.2), color: 0xFFFFFF, alpha: 0.13, width: 0.5)
         }
     }
 
@@ -341,12 +360,40 @@ enum MachineArtwork {
         }
     }
 
-    /// A static off switch for the exported icon; the running app uses NSSwitch.
+    /// Silver rim, inset track, and a restrained mint tint when powered.
+    static func switchTrack(powered: Bool) -> CGImage {
+        raster(switchFrame.size) {
+            let rim = rounded(CGRect(x: 0.5, y: 1.5, width: 35, height: 19), 9.5)
+            gradient(rim, [(0x83939F, 1), (0xF4F8FA, 1)], -90)
+            stroke(rim, 0xFFFFFF, 0.45, 0.5)
+            let track = rounded(CGRect(x: 1.6, y: 2.8, width: 32.8, height: 16.4), 8.2)
+            gradient(track, powered ? [(0x759C8D, 1), (0xB8D8C7, 1)] :
+                     [(0x939FA9, 1), (0xC4CDD4, 1)], -90)
+            stroke(track, powered ? 0x597D6B : 0x70808C, 0.37, 0.6)
+            line(CGPoint(x:10,y:18.6), CGPoint(x:26,y:18.6), color: 0x344B41, alpha: 0.18, width: 0.7)
+        }
+    }
+
+    static func switchThumb() -> CGImage {
+        raster(NSSize(width: 22, height: 22)) {
+            let knob = NSBezierPath(ovalIn: CGRect(x: 3, y: 3.4, width: 16, height: 16))
+            NSGraphicsContext.saveGraphicsState()
+            let shadow = NSShadow(); shadow.shadowColor = color(0x253340, 0.32)
+            shadow.shadowBlurRadius = 1.5; shadow.shadowOffset = NSSize(width: 0, height: -1.2); shadow.set()
+            fill(knob, 0xB3BFC8)
+            NSGraphicsContext.restoreGraphicsState()
+            gradient(knob, [(0xFFFFFF, 1), (0xF2F5F7, 1), (0xB8C4CE, 1)], -90)
+            stroke(knob, 0xFFFFFF, 0.75, 0.6)
+            gradient(NSBezierPath(ovalIn: CGRect(x: 4.3, y: 5, width: 13.4, height: 13.2)),
+                     [(0xFFFFFF, 1), (0xE4EBF0, 1)], -90)
+        }
+    }
+
     static func button() -> CGImage {
-        raster(NSSize(width: 40, height: 24)) {
-            gradient(rounded(NSRect(x: 1, y: 2, width: 38, height: 20), 10), [(0x9AA6B3, 0.8), (0xD1D9E1, 0.8)])
-            stroke(rounded(NSRect(x: 1, y: 2, width: 38, height: 20), 10), 0xFFFFFF, 0.8, 0.6)
-            gradient(NSBezierPath(ovalIn: NSRect(x: 3, y: 4, width: 16, height: 16)), [(0xFFFFFF, 1), (0xEEF2F7, 1)])
+        raster(switchFrame.size) {
+            let ctx = NSGraphicsContext.current!.cgContext
+            ctx.draw(switchTrack(powered: false), in: CGRect(origin: .zero, size: switchFrame.size))
+            ctx.draw(switchThumb(), in: CGRect(x: -1, y: 0, width: 22, height: 22))
         }
     }
 }
