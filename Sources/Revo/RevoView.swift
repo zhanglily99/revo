@@ -287,13 +287,15 @@ final class RevoView: NSView {
                 strip.bounds = CGRect(x: 0, y: 0, width: MachineArtwork.paperWidth / CGFloat(columns) - 1, height: height)
                 let x = (scraps.bounds.width - MachineArtwork.paperWidth) / 2 + (CGFloat(col) + 0.5) * MachineArtwork.paperWidth / CGFloat(columns)
                 let start = CGPoint(x: x, y: scraps.bounds.height + height / 2)
-                let pileHeight = min(15, CGFloat(pile.count) * 0.15)
-                let end = CGPoint(x: x + CGFloat.random(in: -19...19), y: 5 + pileHeight + CGFloat.random(in: 0...5))
+                let pileHeight = min(6, CGFloat(pile.count) * 0.07)
+                let landingX = scraps.frame.minX + x + CGFloat.random(in: -19...19)
+                let floor = MachineArtwork.floorPoint(horizontal: (landingX - 31) / 178, depth: CGFloat.random(in: 0.08...0.55))
+                let end = CGPoint(x: floor.x - scraps.frame.minX, y: floor.y - scraps.frame.minY + pileHeight + 3)
                 strip.position = end
                 strip.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat.random(in: -0.9...0.9)).scaledBy(x: 1, y: 0.35))
                 scraps.addSublayer(strip); pile.append(strip)
                 let fall = CAKeyframeAnimation(keyPath: "position")
-                fall.values = [NSValue(point: start), NSValue(point: CGPoint(x: x, y: scraps.bounds.height * 0.5)), NSValue(point: end)]
+                fall.values = [NSValue(point: start), NSValue(point: CGPoint(x: (x + end.x) / 2, y: (start.y + end.y) / 2)), NSValue(point: end)]
                 fall.keyTimes = [0, 0.65, 1]; fall.timingFunctions = [CAMediaTimingFunction(name: .linear), CAMediaTimingFunction(name: .easeIn)]
                 let curl = CABasicAnimation(keyPath: "transform"); curl.fromValue = CATransform3DIdentity; curl.toValue = strip.transform
                 let group = CAAnimationGroup(); group.animations = [fall, curl]

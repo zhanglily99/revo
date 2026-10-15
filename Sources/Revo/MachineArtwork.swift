@@ -63,10 +63,10 @@ enum MachineArtwork {
         path.addQuadCurve(to: CGPoint(x: 201, y: 230), control: CGPoint(x: 199, y: 235))
         path.addLine(to: CGPoint(x: 215, y: 202))
         path.addQuadCurve(to: CGPoint(x: 217, y: 193), control: CGPoint(x: 217, y: 198))
-        path.addLine(to: CGPoint(x: 217, y: 67))
-        path.addQuadCurve(to: CGPoint(x: 199, y: 49), control: CGPoint(x: 217, y: 49))
-        path.addLine(to: CGPoint(x: 41, y: 49))
-        path.addQuadCurve(to: CGPoint(x: 23, y: 67), control: CGPoint(x: 23, y: 49))
+        path.addLine(to: CGPoint(x: 217, y: 61))
+        path.addQuadCurve(to: CGPoint(x: 205, y: 49), control: CGPoint(x: 217, y: 49))
+        path.addLine(to: CGPoint(x: 35, y: 49))
+        path.addQuadCurve(to: CGPoint(x: 23, y: 61), control: CGPoint(x: 23, y: 49))
         path.addLine(to: CGPoint(x: 23, y: 193))
         path.addQuadCurve(to: CGPoint(x: 25, y: 202), control: CGPoint(x: 23, y: 198))
         path.addLine(to: CGPoint(x: 39, y: 230))
@@ -98,12 +98,81 @@ enum MachineArtwork {
         let path = CGMutablePath()
         path.move(to: CGPoint(x: 23, y: 149))
         path.addLine(to: CGPoint(x: 217, y: 149))
-        path.addLine(to: CGPoint(x: 217, y: 67))
-        path.addQuadCurve(to: CGPoint(x: 199, y: 49), control: CGPoint(x: 217, y: 49))
-        path.addLine(to: CGPoint(x: 41, y: 49))
-        path.addQuadCurve(to: CGPoint(x: 23, y: 67), control: CGPoint(x: 23, y: 49))
+        path.addLine(to: CGPoint(x: 217, y: 61))
+        path.addQuadCurve(to: CGPoint(x: 205, y: 49), control: CGPoint(x: 217, y: 49))
+        path.addLine(to: CGPoint(x: 35, y: 49))
+        path.addQuadCurve(to: CGPoint(x: 23, y: 61), control: CGPoint(x: 23, y: 49))
         path.closeSubpath()
         return path
+    }
+
+    /// Depth edges converge on the same point as the metal top plane.
+    private static let vanishingPoint = CGPoint(x: 120, y: 387)
+    private static func recede(_ point: CGPoint, depth: CGFloat = 1) -> CGPoint {
+        let scale = 1 - 0.19 * depth
+        return CGPoint(x: vanishingPoint.x + (point.x - vanishingPoint.x) * scale,
+                       y: vanishingPoint.y + (point.y - vanishingPoint.y) * scale)
+    }
+
+    static func floorPoint(horizontal: CGFloat, depth: CGFloat) -> CGPoint {
+        recede(CGPoint(x: 31 + 178 * horizontal, y: 59), depth: depth)
+    }
+
+    private static func polygon(_ points: [CGPoint]) -> NSBezierPath {
+        let path = NSBezierPath()
+        guard let first = points.first else { return path }
+        path.move(to: first)
+        for point in points.dropFirst() { path.line(to: point) }
+        path.close()
+        return path
+    }
+
+    private static func roundedPolygon(_ points: [CGPoint], radius: CGFloat) -> NSBezierPath {
+        let path = CGMutablePath()
+        for index in points.indices {
+            let corner = points[index]
+            let previous = points[(index + points.count - 1) % points.count]
+            let next = points[(index + 1) % points.count]
+            func tangent(toward point: CGPoint) -> CGPoint {
+                let dx = point.x - corner.x, dy = point.y - corner.y
+                let distance = hypot(dx, dy)
+                let fraction = min(radius / distance, 0.5)
+                return CGPoint(x: corner.x + dx * fraction, y: corner.y + dy * fraction)
+            }
+            let entry = tangent(toward: previous), exit = tangent(toward: next)
+            if index == points.startIndex { path.move(to: entry) } else { path.addLine(to: entry) }
+            path.addQuadCurve(to: exit, control: corner)
+        }
+        path.closeSubpath()
+        return NSBezierPath(cgPath: path)
+    }
+
+    private static func drawGlassInterior() {
+        NSGraphicsContext.saveGraphicsState()
+        NSBezierPath(cgPath: glassOutline).addClip()
+        let left = CGPoint(x: 27, y: 54), right = CGPoint(x: 213, y: 54)
+        let backLeft = recede(left), backRight = recede(right)
+        let topLeft = CGPoint(x: 27, y: 149), topRight = CGPoint(x: 213, y: 149)
+
+        // Rear uprights and side walls are visible through the front pane.
+        gradient(polygon([left, backLeft, recede(topLeft), topLeft]),
+                 [(0xD1E1EE, 0.10), (0xFFFFFF, 0.035), (0xFFFFFF, 0.22)], 0)
+        gradient(polygon([right, backRight, recede(topRight), topRight]),
+                 [(0x849CAF, 0.14), (0xE6F1FA, 0.035), (0xFFFFFF, 0.16)], 0)
+        line(backLeft, recede(topLeft), color: 0x7E94A7, alpha: 0.23, width: 0.65)
+        line(backRight, recede(topRight), color: 0x7E94A7, alpha: 0.26, width: 0.65)
+        line(CGPoint(x: backLeft.x + 1.2, y: backLeft.y), recede(CGPoint(x: 29, y: 149)), color: 0xFFFFFF, alpha: 0.56, width: 1)
+        line(CGPoint(x: backRight.x - 1.2, y: backRight.y), recede(CGPoint(x: 211, y: 149)), color: 0xFFFFFF, alpha: 0.46, width: 0.8)
+
+        // The bottom is a receding plane, with its back edge higher and narrower.
+        let floor = roundedPolygon([left, right, backRight, backLeft], radius: 5)
+        gradient(floor, [(0xD6E4EF, 0.13), (0xFFFFFF, 0.05), (0xFFFFFF, 0.31)], -90)
+        stroke(floor, 0x7A91A4, 0.21, 0.8)
+        let innerLeft = CGPoint(x: 29, y: 56), innerRight = CGPoint(x: 211, y: 56)
+        let innerFloor = roundedPolygon([innerLeft, innerRight, recede(innerRight), recede(innerLeft)], radius: 5)
+        stroke(innerFloor, 0xFFFFFF, 0.66, 1.1)
+        stroke(innerFloor, 0xFFFFFF, 0.12, 3.2)
+        NSGraphicsContext.restoreGraphicsState()
     }
 
     private static func drawBody() {
@@ -115,6 +184,8 @@ enum MachineArtwork {
         NSGraphicsContext.restoreGraphicsState()
         gradient(outer, [(0xFFFFFF, 0.15), (0xE5EDF6, 0.015), (0xA8B3C1, 0.035), (0xFFFFFF, 0.12)], -25)
         stroke(outer, 0x6C7A8B, 0.38, 0.9)
+
+        drawGlassInterior()
 
         // Fill the complete head first, including the formerly clear perimeter.
         let head = NSBezierPath(cgPath: headOutline)
@@ -143,7 +214,9 @@ enum MachineArtwork {
         face.close()
         NSGraphicsContext.saveGraphicsState()
         head.addClip()
-        gradient(face, [(0xE3E8ED, 1), (0xC3CDD6, 1), (0xD4DCE4, 1)], -90)
+        gradient(face, [(0xE6EBF0, 1), (0xCBD4DC, 1), (0xDDE3EA, 1)], -90)
+        gradient(NSBezierPath(rect: NSRect(x: 23, y: 149, width: 7, height: 48)), [(0xFFFFFF, 0.22), (0xFFFFFF, 0)], 0)
+        gradient(NSBezierPath(rect: NSRect(x: 210, y: 149, width: 7, height: 48)), [(0x718494, 0), (0x718494, 0.10)], 0)
         line(CGPoint(x: 25, y: 197), CGPoint(x: 215, y: 197), color: 0xFFFFFF, alpha: 0.87, width: 0.9)
         line(CGPoint(x: 26, y: 195.8), CGPoint(x: 214, y: 195.8), color: 0x718291, alpha: 0.20, width: 0.55)
         line(CGPoint(x: 23.5, y: 149.5), CGPoint(x: 216.5, y: 149.5), color: 0x6F8192, alpha: 0.38, width: 0.7)
@@ -156,27 +229,25 @@ enum MachineArtwork {
         gradient(rounded(inlet, 3.5), [(0x121C25, 1), (0x3C4A58, 1)])
         line(CGPoint(x: 52, y: inlet.minY), CGPoint(x: 188, y: inlet.minY), color: 0xF4FAFF, alpha: 0.9, width: 0.7)
 
-        // Thick clear side rails carry the upper-left light down the front face.
-        gradient(rounded(NSRect(x: 26, y: 64, width: 8, height: 84), 4), [(0xFFFFFF, 0.94), (0xA7B3C2, 0.05), (0xFFFFFF, 0.40)], 0)
-        gradient(rounded(NSRect(x: 207, y: 64, width: 7, height: 84), 3.5), [(0xFFFFFF, 0.24), (0x778797, 0.32), (0xFFFFFF, 0.78)], 0)
-        line(CGPoint(x: 25, y: 68), CGPoint(x: 25, y: 147), color: 0xFFFFFF, alpha: 0.88, width: 1)
-        line(CGPoint(x: 215, y: 68), CGPoint(x: 215, y: 147), color: 0xFFFFFF, alpha: 0.72, width: 0.8)
-        gradient(rounded(NSRect(x: 39, y: 51, width: 162, height: 9), 4.5), [(0xFFFFFF, 0.25), (0x81909F, 0.30), (0xFFFFFF, 0.92)])
-        line(CGPoint(x: 42, y: 55), CGPoint(x: 198, y: 55), color: 0xFFFFFF, alpha: 0.85, width: 0.8)
-        gradient(rounded(NSRect(x: 43, y: 63, width: 154, height: 5), 2.5), [(0xB2BECC, 0.20), (0xFFFFFF, 0.56)])
-        line(CGPoint(x: 43, y: 62), CGPoint(x: 197, y: 62), color: 0x8594A4, alpha: 0.22, width: 0.6)
     }
 
     private static func drawGlass() {
         let front = NSBezierPath(cgPath: glassOutline)
         NSGraphicsContext.saveGraphicsState()
         front.addClip()
-        // A clear center and denser perimeter give the pane a rounded liquid meniscus.
-        gradient(front, [(0xFFFFFF, 0.16), (0xE4EFF9, 0.015), (0xFFFFFF, 0.06), (0xFFFFFF, 0.22)], -83)
-        stroke(rounded(NSRect(x: 24, y: 50, width: 192, height: 119), 18), 0xFFFFFF, 0.78, 1.5)
-        stroke(rounded(NSRect(x: 27, y: 53, width: 186, height: 115), 16), 0x718699, 0.23, 1.1)
-        stroke(rounded(NSRect(x: 30, y: 56, width: 180, height: 110), 14), 0xFFFFFF, 0.57, 1.3)
-        stroke(rounded(NSRect(x: 33, y: 59, width: 174, height: 106), 13), 0xFFFFFF, 0.16, 3.5)
+        // Front edges stay vertical; depth belongs to the side walls and floor behind them.
+        gradient(front, [(0xFFFFFF, 0.11), (0xE4EFF9, 0.015), (0xFFFFFF, 0.04), (0xFFFFFF, 0.15)], -83)
+        let rim = NSBezierPath()
+        rim.move(to: CGPoint(x: 24.5, y: 149))
+        rim.line(to: CGPoint(x: 24.5, y: 62))
+        rim.curve(to: CGPoint(x: 36, y: 50.5), controlPoint1: CGPoint(x: 24.5, y: 53), controlPoint2: CGPoint(x: 27.5, y: 50.5))
+        rim.line(to: CGPoint(x: 204, y: 50.5))
+        rim.curve(to: CGPoint(x: 215.5, y: 62), controlPoint1: CGPoint(x: 212.5, y: 50.5), controlPoint2: CGPoint(x: 215.5, y: 53))
+        rim.line(to: CGPoint(x: 215.5, y: 149))
+        stroke(rim, 0xFFFFFF, 0.16, 4.5)
+        stroke(rim, 0xFFFFFF, 0.83, 1.3)
+        line(CGPoint(x: 29, y: 58), CGPoint(x: 29, y: 148), color: 0x9BB0C2, alpha: 0.25, width: 0.65)
+        line(CGPoint(x: 211, y: 58), CGPoint(x: 211, y: 148), color: 0x8FA5B9, alpha: 0.28, width: 0.65)
 
         // Broad, low-contrast reflections merge into the clear center.
         let reflection = NSBezierPath()
@@ -187,10 +258,10 @@ enum MachineArtwork {
         reflection.curve(to: CGPoint(x: 24, y: 133), controlPoint1: CGPoint(x: 93, y: 81), controlPoint2: CGPoint(x: 44, y: 128))
         reflection.close()
         gradient(reflection, [(0xFFFFFF, 0.20), (0xFFFFFF, 0.015)], -48)
-        gradient(rounded(NSRect(x: 28, y: 65, width: 12, height: 90), 6), [(0xFFFFFF, 0.04), (0xFFFFFF, 0.58), (0xB8D1E6, 0.10), (0xFFFFFF, 0.02)], 0)
-        gradient(rounded(NSRect(x: 200, y: 65, width: 12, height: 90), 6), [(0xFFFFFF, 0.015), (0x98AFC3, 0.20), (0xFFFFFF, 0.70), (0xFFFFFF, 0.03)], 0)
-        gradient(rounded(NSRect(x: 40, y: 53, width: 160, height: 10), 5), [(0xFFFFFF, 0.06), (0xC4D8E9, 0.25), (0xFFFFFF, 0.77), (0xFFFFFF, 0.02)])
-        line(CGPoint(x: 44, y: 55), CGPoint(x: 193, y: 55), color: 0xFFFFFF, alpha: 0.84, width: 1)
+        gradient(rounded(NSRect(x: 28, y: 65, width: 7, height: 90), 3.5), [(0xFFFFFF, 0.04), (0xFFFFFF, 0.58), (0xB8D1E6, 0.10), (0xFFFFFF, 0.02)], 0)
+        gradient(rounded(NSRect(x: 205, y: 65, width: 7, height: 90), 3.5), [(0xFFFFFF, 0.015), (0x98AFC3, 0.20), (0xFFFFFF, 0.70), (0xFFFFFF, 0.03)], 0)
+        gradient(rounded(NSRect(x: 30, y: 51, width: 180, height: 6), 2), [(0xFFFFFF, 0.06), (0xC4D8E9, 0.25), (0xFFFFFF, 0.77), (0xFFFFFF, 0.02)])
+        line(CGPoint(x: 31, y: 53), CGPoint(x: 209, y: 53), color: 0xFFFFFF, alpha: 0.84, width: 1)
         // A narrow contact shadow separates the solid head from the glass below it.
         gradient(NSBezierPath(rect: NSRect(x: 23, y: 141, width: 194, height: 8)), [(0x536779, 0.16), (0x536779, 0)], -90)
         NSGraphicsContext.restoreGraphicsState()
