@@ -14,7 +14,7 @@ final class RevoView: NSView {
     private let powerSwitch = NSSwitch(frame: MachineArtwork.switchFrame)
     private let powerLabel = CATextLayer()
     private let shutter = CALayer()
-    private let backdrop = GlassBackdrop(frame: MachineArtwork.shell)
+    private let backdrop = GlassBackdrop(frame: MachineArtwork.glassFrame)
     private let led = CALayer()
     private let glow = CALayer()
     private let caption = CATextLayer()
@@ -110,8 +110,8 @@ final class RevoView: NSView {
 
     @objc private func updateTransparency() {
         let reduce = NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
-        // Clear glass exposes the desktop directly; accessibility can replace it with a solid surface.
-        backdrop.alphaValue = reduce ? 1 : 0
+        // A light native diffusion sits under the clear meniscus and edge reflections.
+        backdrop.alphaValue = reduce ? 1 : 0.22
         backdrop.layer?.backgroundColor = reduce ? MachineArtwork.color(0xE6EBF1).cgColor : NSColor.clear.cgColor
     }
 

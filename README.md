@@ -9,7 +9,7 @@ A tiny native macOS desktop companion that turns letting go of files into a smal
 
 ## The little machine
 
-A solid silver head, clear glass enclosure, layered edge reflections, and a native on/off switch. A gently elevated viewpoint reveals the receding top plane and metal front fascia. Larger file previews align with the inlet before feeding into the glass enclosure. The lower enclosure shows the desktop directly through clear glass, with no frosted blur. Reduce Transparency replaces it with a solid native backdrop. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 252 points.
+A solid silver head, clear glass enclosure, layered edge reflections, and a native on/off switch. A gently elevated viewpoint reveals the receding top plane and metal front fascia. Larger file previews align with the inlet before feeding into the glass enclosure. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Reduce Transparency replaces the glass with a solid native backdrop. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 252 points.
 
 - Documents become narrow paper strips.
 - Photos use a thumbnail and break into confetti.
@@ -82,7 +82,7 @@ Preview mode renders off, on, feeding, and finished screenshots using demo sheet
 | `RevoPanel.swift` | Transparent floating panel and saved position |
 | `RevoView.swift` | Drag and drop, animation queue, menus, and feedback |
 | `MachineArtwork.swift` | Translucent enclosure, metal inlet, and shutter |
-| `GlassBackdrop.swift` | Reduce Transparency backdrop and click-through artwork host |
+| `GlassBackdrop.swift` | Native diffusion inside the lower glass and accessibility fallback |
 | `PowerQueue.swift` | Default-off interlock and waiting-job cancellation |
 | `PaperSprite.swift` | File-specific paper previews and bounded photo thumbnails |
 | `TrashService.swift` | System Trash operations and conflict-safe undo |
