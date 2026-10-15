@@ -21,7 +21,7 @@ enum Preview {
         try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         guard let view = panel.contentView as? RevoView else { exit(1) }
         func capture(_ name: String) {
-            let width = 720, height = 840
+            let width = Int(MachineArtwork.size.width * 3), height = Int(MachineArtwork.size.height * 3)
             guard let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return }
             ctx.setFillColor(MachineArtwork.color(0xE5EAF1).cgColor); ctx.fill(CGRect(x: 0, y: 0, width: width, height: height)); ctx.scaleBy(x: 3, y: 3)
             (view.layer?.presentation() ?? view.layer)?.render(in: ctx)

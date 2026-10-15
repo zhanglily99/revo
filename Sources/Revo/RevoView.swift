@@ -66,9 +66,9 @@ final class RevoView: NSView {
         glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 4; glow.shadowOpacity = 0.6; machine.addSublayer(glow)
         shutter.frame = MachineArtwork.inlet
         shutter.contents = MachineArtwork.shutter(); machine.addSublayer(shutter)
-        led.frame = CGRect(x: 106, y: 151, width: 4, height: 4); led.cornerRadius = 2
+        led.frame = CGRect(x: 106, y: 170, width: 4, height: 4); led.cornerRadius = 2
         machine.addSublayer(led)
-        powerLabel.frame = CGRect(x: 116, y: 146, width: 37, height: 15)
+        powerLabel.frame = CGRect(x: 116, y: 165, width: 37, height: 15)
         powerLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold); powerLabel.fontSize = 8
         powerLabel.contentsScale = NSScreen.main?.backingScaleFactor ?? 2
         powerLabel.foregroundColor = MachineArtwork.color(0x465361).cgColor
@@ -216,7 +216,7 @@ final class RevoView: NSView {
 
     func demo(_ style: ShredStyle) {
         guard isPoweredOn, state != .working else { return }
-        queue.append(contentsOf: [Job(url: URL(fileURLWithPath: "/demo-paper.txt"), style: style, point: CGPoint(x: 120, y: 246), demo: true)])
+        queue.append(contentsOf: [Job(url: URL(fileURLWithPath: "/demo-paper.txt"), style: style, point: CGPoint(x: 120, y: MachineArtwork.slotY + 54), demo: true)])
         next()
     }
     private func next() {
