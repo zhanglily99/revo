@@ -32,7 +32,8 @@ enum Preview {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { capture("idle"); view.setPower(true) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) { capture("on"); view.demo(.photo) }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.12) { capture("feeding") }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { capture("finished"); NSApp.terminate(nil) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.05) { capture("gripping") }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.65) { capture("feeding") }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.9) { capture("finished"); NSApp.terminate(nil) }
     }
 }

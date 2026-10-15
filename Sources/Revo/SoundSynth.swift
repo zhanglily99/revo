@@ -22,6 +22,22 @@ enum SoundSynth {
         return wav(samples)
     }
 
+    /// A soft rubber-roller bite with a brief paper friction transient.
+    static func gripData() -> Data {
+        let duration = 0.19
+        let n = Int(Double(sampleRate) * duration)
+        var samples = [Int16](repeating: 0, count: n)
+        var noise = 0.0
+        for i in 0..<n {
+            let t = Double(i) / Double(sampleRate)
+            noise = noise * 0.7 + Double.random(in: -1...1) * 0.3
+            let envelope = min(1, t / 0.008) * exp(-t * 23)
+            let roller = sin(2 * .pi * (115 * t + 160 * t * t)) * 0.28
+            samples[i] = Int16(max(-1, min(1, (noise * 0.8 + roller) * envelope)) * 32767)
+        }
+        return wav(samples)
+    }
+
     /// A short motor startup with a rising pitch.
     static func wakeData() -> Data {
         let duration = 0.35
@@ -39,7 +55,7 @@ enum SoundSynth {
 
     /// Low motor rumble with filtered noise pulsing at 13 Hz.
     static func shredData() -> Data {
-        let duration = 1.5
+        let duration = 3.3
         let n = Int(Double(sampleRate) * duration)
         var samples = [Int16](repeating: 0, count: n)
         var lastNoise = 0.0

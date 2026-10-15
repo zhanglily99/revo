@@ -359,37 +359,34 @@ final class RevoView: NSView {
 
     private func animate(_ job: Job, image: CGImage?) {
         guard let image else { finish(job); return }
-        let duration: Double = reducedMotion ? 0.18 : job.style == .heavy ? 1.7 : job.style == .folder ? 1.35 : 1.05
-        let approach = reducedMotion ? 0 : 0.28
+        let timing = PaperFeed.Timing(style: job.style, reducedMotion: reducedMotion)
         let count = job.style == .folder ? 3 : 1
-        for i in 0..<count {
-            let sheet = CALayer(); sheet.contents = image
-            sheet.bounds = CGRect(x: 0, y: 0, width: MachineArtwork.paperWidth, height: MachineArtwork.paperHeight)
-            let dx = CGFloat(i) * 4
-            let halfHeight = MachineArtwork.paperHeight / 2
-            let start = CGPoint(x: 80 + dx, y: halfHeight + 1 + CGFloat(i) * 2)
-            let end = CGPoint(x: 80 + dx, y: -halfHeight - 2)
-            sheet.position = end; feeder.addSublayer(sheet)
-            let position = CAKeyframeAnimation(keyPath: "position")
+        for index in 0..<count {
+            let dx = CGFloat(index) * 3
             let margin = MachineArtwork.paperWidth / 2 + 4
             let sourceX = max(margin, min(feeder.bounds.width - margin - dx, job.point.x - feeder.frame.minX))
-            position.values = [NSValue(point: CGPoint(x: sourceX + dx, y: halfHeight + 1 + CGFloat(i) * 2)), NSValue(point: start), NSValue(point: end)]
-            position.keyTimes = [0, NSNumber(value: approach / (duration + approach)), 1]
-            position.timingFunctions = [CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1), CAMediaTimingFunction(name: .linear)]
-            position.duration = duration + approach; position.beginTime = CACurrentMediaTime() + Double(i) * 0.15
-            position.fillMode = .backwards; sheet.add(position, forKey: "feed")
-            let rotate = CABasicAnimation(keyPath: "transform.rotation.z"); rotate.fromValue = i == 1 ? 0.08 : -0.055; rotate.toValue = 0; rotate.duration = max(0.01, approach)
-            sheet.add(rotate, forKey: "align")
-            DispatchQueue.main.asyncAfter(deadline: .now() + duration + approach + Double(i) * 0.15) { sheet.removeFromSuperlayer() }
+            let sheet = PaperFeed.sheet(image: image, sourceX: sourceX + dx, targetX: 80 + dx,
+                                         index: index, timing: timing, reducedMotion: reducedMotion)
+            feeder.addSublayer(sheet)
+            DispatchQueue.main.asyncAfter(deadline: .now() + timing.duration + Double(index) * timing.stagger) {
+                sheet.removeFromSuperlayer()
+            }
         }
         if !reducedMotion {
-            let vibration = CAKeyframeAnimation(keyPath: "transform.translation.x")
-            vibration.values = [0, 0.35, -0.35, 0.2, 0]; vibration.duration = 0.16; vibration.repeatCount = .infinity
-            machine.add(vibration, forKey: "motor")
-            play(.motor, volume: 0.16)
+            DispatchQueue.main.asyncAfter(deadline: .now() + timing.approach) { [weak self] in
+                self?.play(.grip, volume: 0.24)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + timing.lead) { [weak self] in
+                guard let self else { return }
+                let vibration = CAKeyframeAnimation(keyPath: "transform.translation.x")
+                vibration.values = [0, 0.18, -0.18, 0.1, 0]; vibration.duration = 0.18; vibration.repeatCount = .infinity
+                self.machine.add(vibration, forKey: "motor")
+                self.play(.motor, volume: 0.14)
+            }
         }
-        emit(image, style: job.style, duration: duration, delay: approach + 0.17)
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration + approach + 0.55) { [weak self] in self?.finish(job) }
+        emit(image, style: job.style, duration: timing.pull, delay: timing.lead + 0.12)
+        let stackDelay = Double(count - 1) * timing.stagger
+        DispatchQueue.main.asyncAfter(deadline: .now() + timing.duration + stackDelay + 0.6) { [weak self] in self?.finish(job) }
     }
 
     private func emit(_ image: CGImage, style: ShredStyle, duration: Double, delay: Double) {

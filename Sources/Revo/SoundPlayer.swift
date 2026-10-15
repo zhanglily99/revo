@@ -2,7 +2,7 @@ import AVFoundation
 
 /// Prepare and play audio away from the main thread so the first sheet never stalls.
 final class SoundPlayer {
-    enum Effect: CaseIterable { case motor, finish, switchOn, switchOff }
+    enum Effect: CaseIterable { case motor, finish, switchOn, switchOff, grip }
     private let queue = DispatchQueue(label: "com.revo.audio", qos: .userInitiated)
     private var players: [Effect: AVAudioPlayer] = [:]
     private var paperPlayer: AVAudioPlayer?
@@ -13,6 +13,7 @@ final class SoundPlayer {
             for effect in Effect.allCases {
                 let data: Data
                 switch effect {
+                case .grip: data = SoundSynth.gripData()
                 case .motor: data = SoundSynth.shredData()
                 case .finish: data = SoundSynth.thudData()
                 case .switchOn: data = SoundSynth.switchData(powerOn: true)
