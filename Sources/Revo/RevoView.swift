@@ -61,9 +61,9 @@ final class RevoView: NSView {
         feeder.masksToBounds = true; machine.addSublayer(feeder)
         scraps.frame = MachineArtwork.window; scraps.cornerRadius = 10; scraps.masksToBounds = true; machine.addSublayer(scraps)
         let glass = CALayer(); glass.frame = bounds; glass.contents = MachineArtwork.image(glass: true); machine.addSublayer(glass)
-        glow.frame = CGRect(x: 50, y: MachineArtwork.inlet.minY - 1, width: 140, height: 1.5); glow.cornerRadius = 0.75
+        glow.frame = CGRect(x: 50, y: MachineArtwork.inlet.minY - 1, width: 140, height: 0.65); glow.cornerRadius = 0.325
         glow.backgroundColor = MachineArtwork.color(0xDCEBFF).cgColor; glow.opacity = 0
-        glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 4; glow.shadowOpacity = 0.6; machine.addSublayer(glow)
+        glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 2; glow.shadowOpacity = 0.35; machine.addSublayer(glow)
         shutter.frame = MachineArtwork.inlet
         shutter.contents = MachineArtwork.shutter(); machine.addSublayer(shutter)
         let controlCenterY = MachineArtwork.switchFrame.midY

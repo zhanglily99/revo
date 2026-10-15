@@ -11,7 +11,7 @@ enum MachineArtwork {
     static let window = CGRect(x: 43, y: 62, width: 154, height: 107)
     static let shell = CGRect(x: 23, y: 49, width: 194, height: 206)
     static let glassFrame = CGRect(x: 23, y: 49, width: 194, height: 120)
-    static let inlet = CGRect(x: 47, y: slotY - 3, width: 146, height: 7)
+    static let inlet = CGRect(x: 47, y: slotY - 2, width: 146, height: 5)
     static let switchFrame = CGRect(x: 162, y: 180, width: 40, height: 24)
 
     static func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> NSColor {
@@ -226,12 +226,52 @@ enum MachineArtwork {
         text("Revo", NSPoint(x: 45, y: 182), NSFont(name: "Georgia-Italic", size: 17) ?? .systemFont(ofSize: 17), 0x3B4653)
         NSGraphicsContext.restoreGraphicsState()
 
-        // The inlet and shutter share geometry with the paper clipping plane.
-        let lip = rounded(inlet.insetBy(dx: -4, dy: -3), 6.5)
-        gradient(lip, [(0x82919F, 0.9), (0xFFFFFF, 1), (0x9EAAB7, 0.9), (0xFFFFFF, 1)])
-        gradient(rounded(inlet, 3.5), [(0x121C25, 1), (0x3C4A58, 1)])
-        line(CGPoint(x: 52, y: inlet.minY), CGPoint(x: 188, y: inlet.minY), color: 0xF4FAFF, alpha: 0.9, width: 0.7)
+        drawInlet()
+    }
 
+    /// Project a capsule onto the lid so both end arcs share the metal's perspective.
+    private static func inletProfile(_ rect: CGRect) -> NSBezierPath {
+        let depth = rect.height / (0.19 * (vanishingPoint.y - rect.minY))
+        func point(_ x: CGFloat, _ v: CGFloat) -> CGPoint {
+            recede(CGPoint(x: x, y: rect.minY), depth: v * depth)
+        }
+        let radius = rect.height / 2
+        let left = rect.minX + radius, right = rect.maxX - radius
+        let k: CGFloat = 0.55228475
+        let path = NSBezierPath()
+        path.move(to: point(left, 0))
+        path.line(to: point(right, 0))
+        path.curve(to: point(rect.maxX, 0.5), controlPoint1: point(right + radius * k, 0), controlPoint2: point(rect.maxX, 0.5 - 0.5 * k))
+        path.curve(to: point(right, 1), controlPoint1: point(rect.maxX, 0.5 + 0.5 * k), controlPoint2: point(right + radius * k, 1))
+        path.line(to: point(left, 1))
+        path.curve(to: point(rect.minX, 0.5), controlPoint1: point(left - radius * k, 1), controlPoint2: point(rect.minX, 0.5 + 0.5 * k))
+        path.curve(to: point(left, 0), controlPoint1: point(rect.minX, 0.5 - 0.5 * k), controlPoint2: point(left - radius * k, 0))
+        path.close()
+        return path
+    }
+
+    private static func drawInlet() {
+        // A fine machined bevel sits flush with the lid around the recessed aperture.
+        let bevel = inletProfile(inlet.insetBy(dx: -0.9, dy: -0.9))
+        NSGraphicsContext.saveGraphicsState()
+        let shadow = NSShadow()
+        shadow.shadowColor = color(0x536575, 0.17)
+        shadow.shadowBlurRadius = 1.2
+        shadow.shadowOffset = NSSize(width: 0, height: -0.5)
+        shadow.set()
+        fill(bevel, 0xBBC7D1)
+        NSGraphicsContext.restoreGraphicsState()
+        gradient(bevel, [(0x9CAAB7, 1), (0xE9EEF3, 1), (0xC6D0DA, 1)], -90)
+        stroke(bevel, 0x718291, 0.25, 0.35)
+
+        let opening = inletProfile(inlet)
+        gradient(opening, [(0x101923, 1), (0x293642, 1)], -90)
+        NSGraphicsContext.saveGraphicsState()
+        opening.addClip()
+        gradient(NSBezierPath(rect: CGRect(x: inlet.minX, y: inlet.maxY - 2.1, width: inlet.width, height: 2.1)), [(0x030A12, 0.90), (0x030A12, 0)], -90)
+        line(CGPoint(x: 51, y: inlet.maxY - 0.35), CGPoint(x: 189, y: inlet.maxY - 0.35), color: 0x020910, alpha: 0.75, width: 0.55)
+        NSGraphicsContext.restoreGraphicsState()
+        line(CGPoint(x: 50, y: inlet.minY - 0.65), CGPoint(x: 190, y: inlet.minY - 0.65), color: 0xFFFFFF, alpha: 0.72, width: 0.55)
     }
 
     private static func drawGlass() {
@@ -289,10 +329,13 @@ enum MachineArtwork {
     }
 
     static func shutter() -> CGImage {
-        raster(NSSize(width: 146, height: 7)) {
-            let shape = rounded(NSRect(x: 0, y: 0, width: 146, height: 7), 3.5)
-            gradient(shape, [(0xB0BBC6, 1), (0xF7FAFD, 1), (0xBBC6D1, 1)])
-            line(CGPoint(x: 5, y: 5.5), CGPoint(x: 141, y: 5.5), color: 0xFFFFFF, alpha: 0.8, width: 0.5)
+        raster(inlet.size) {
+            // Translate the exact projected aperture into the shutter's local bitmap.
+            NSGraphicsContext.current!.cgContext.translateBy(x: -inlet.minX, y: -inlet.minY)
+            let shape = inletProfile(inlet)
+            gradient(shape, [(0xA7B4C1, 1), (0xDCE4EB, 1), (0xC0CCD7, 1)], -90)
+            line(CGPoint(x: inlet.minX + 4, y: inlet.maxY - 0.5), CGPoint(x: inlet.maxX - 4, y: inlet.maxY - 0.5), color: 0x617485, alpha: 0.52, width: 0.4)
+            line(CGPoint(x: inlet.minX + 4, y: inlet.minY + 0.55), CGPoint(x: inlet.maxX - 4, y: inlet.minY + 0.55), color: 0xF5F8FB, alpha: 0.62, width: 0.4)
         }
     }
 
