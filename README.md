@@ -9,7 +9,7 @@ A tiny native macOS desktop companion that turns letting go of files into a smal
 
 ## The little machine
 
-Clear glass, soft silver, layered edge reflections, and a native on/off switch. The enclosure uses a live NSVisualEffectView backdrop so the desktop shows through the glass. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 252 points.
+A solid silver head, clear glass enclosure, layered edge reflections, and a native on/off switch. A gently elevated viewpoint reveals the receding top plane and metal front fascia. Larger file previews align with the inlet before feeding into the glass enclosure. The lower enclosure shows the desktop directly through clear glass, with no frosted blur. Reduce Transparency replaces it with a solid native backdrop. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 252 points.
 
 - Documents become narrow paper strips.
 - Photos use a thumbnail and break into confetti.
@@ -82,12 +82,13 @@ Preview mode renders off, on, feeding, and finished screenshots using demo sheet
 | `RevoPanel.swift` | Transparent floating panel and saved position |
 | `RevoView.swift` | Drag and drop, animation queue, menus, and feedback |
 | `MachineArtwork.swift` | Translucent enclosure, metal inlet, and shutter |
-| `GlassBackdrop.swift` | Live desktop blur and click-through artwork host |
+| `GlassBackdrop.swift` | Reduce Transparency backdrop and click-through artwork host |
 | `PowerQueue.swift` | Default-off interlock and waiting-job cancellation |
 | `PaperSprite.swift` | File-specific paper previews and bounded photo thumbnails |
 | `TrashService.swift` | System Trash operations and conflict-safe undo |
 | `ShredStyle.swift` | File classification |
 | `SoundSynth.swift` | Synthesized mechanical audio |
+| `SoundPlayer.swift` | Background audio preparation and playback |
 | `Stats.swift` | Local daily count |
 | `SelfTest.swift` | Disposable file-operation checks |
 | `Preview.swift` | Screenshot and icon export |

@@ -1,6 +1,6 @@
 import AppKit
 
-/// Native desktop blur with click-through hit testing for the surrounding drop view.
+/// A native solid backdrop used only when Reduce Transparency is enabled.
 final class GlassBackdrop: NSVisualEffectView {
     override init(frame: NSRect) {
         super.init(frame: frame)
@@ -9,9 +9,12 @@ final class GlassBackdrop: NSVisualEffectView {
         state = .active
         appearance = NSAppearance(named: .aqua)
         wantsLayer = true
-        layer?.cornerRadius = 25
+        let mask = CAShapeLayer()
+        var local = CGAffineTransform(translationX: -frame.minX, y: -frame.minY)
+        mask.path = MachineArtwork.outline.copy(using: &local)
+        layer?.mask = mask
         layer?.masksToBounds = true
-        alphaValue = 0.68
+        alphaValue = 0
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
     override func hitTest(_ point: NSPoint) -> NSView? { nil }

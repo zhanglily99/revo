@@ -1,5 +1,4 @@
 import AppKit
-import AVFoundation
 import QuartzCore
 
 final class RevoView: NSView {
@@ -20,7 +19,7 @@ final class RevoView: NSView {
     private let glow = CALayer()
     private let caption = CATextLayer()
     private var pile: [CALayer] = []
-    private var players: [AVAudioPlayer] = []
+    private let soundPlayer = SoundPlayer()
     private var hovered = false
     private var dragActive = false
     private var messageVersion = 0
@@ -29,10 +28,6 @@ final class RevoView: NSView {
         set { UserDefaults.standard.set(newValue, forKey: "muted") }
     }
     private var reducedMotion: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
-    private lazy var motorSound = SoundSynth.shredData()
-    private lazy var finishSound = SoundSynth.thudData()
-    private lazy var switchOnSound = SoundSynth.switchData(powerOn: true)
-    private lazy var switchOffSound = SoundSynth.switchData(powerOn: false)
 
     override init(frame: NSRect) {
         super.init(frame: frame)
@@ -62,18 +57,18 @@ final class RevoView: NSView {
         machine.frame = bounds; layer.addSublayer(machine)
         let body = CALayer(); body.frame = bounds; body.contents = MachineArtwork.image(); machine.addSublayer(body)
         // The feed is clipped above the physical opening, not hidden by a full image.
-        feeder.frame = CGRect(x: 40, y: MachineArtwork.slotY, width: 160, height: 87)
+        feeder.frame = CGRect(x: 40, y: MachineArtwork.slotY, width: 160, height: MachineArtwork.size.height - MachineArtwork.slotY)
         feeder.masksToBounds = true; machine.addSublayer(feeder)
         scraps.frame = MachineArtwork.window; scraps.cornerRadius = 10; scraps.masksToBounds = true; machine.addSublayer(scraps)
         let glass = CALayer(); glass.frame = bounds; glass.contents = MachineArtwork.image(glass: true); machine.addSublayer(glass)
-        glow.frame = CGRect(x: 50, y: 188, width: 140, height: 1.5); glow.cornerRadius = 0.75
+        glow.frame = CGRect(x: 50, y: MachineArtwork.inlet.minY - 1, width: 140, height: 1.5); glow.cornerRadius = 0.75
         glow.backgroundColor = MachineArtwork.color(0xDCEBFF).cgColor; glow.opacity = 0
         glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 4; glow.shadowOpacity = 0.6; machine.addSublayer(glow)
-        shutter.frame = CGRect(x: 47, y: 189, width: 146, height: 7)
+        shutter.frame = MachineArtwork.inlet
         shutter.contents = MachineArtwork.shutter(); machine.addSublayer(shutter)
-        led.frame = CGRect(x: 48, y: 70, width: 4, height: 4); led.cornerRadius = 2
+        led.frame = CGRect(x: 106, y: 151, width: 4, height: 4); led.cornerRadius = 2
         machine.addSublayer(led)
-        powerLabel.frame = CGRect(x: 59, y: 65, width: 84, height: 15)
+        powerLabel.frame = CGRect(x: 116, y: 146, width: 37, height: 15)
         powerLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold); powerLabel.fontSize = 8
         powerLabel.contentsScale = NSScreen.main?.backingScaleFactor ?? 2
         powerLabel.foregroundColor = MachineArtwork.color(0x465361).cgColor
@@ -115,14 +110,15 @@ final class RevoView: NSView {
 
     @objc private func updateTransparency() {
         let reduce = NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
-        backdrop.alphaValue = reduce ? 1 : 0.68
+        // Clear glass exposes the desktop directly; accessibility can replace it with a solid surface.
+        backdrop.alphaValue = reduce ? 1 : 0
         backdrop.layer?.backgroundColor = reduce ? MachineArtwork.color(0xE6EBF1).cgColor : NSColor.clear.cgColor
     }
 
     @objc private func togglePower() {
         let enabled = !isPoweredOn
         setPower(enabled)
-        play(enabled ? switchOnSound : switchOffSound, volume: 0.45)
+        play(enabled ? .switchOn : .switchOff, volume: 0.45)
     }
 
     func setPower(_ enabled: Bool) {
@@ -253,14 +249,16 @@ final class RevoView: NSView {
         let count = job.style == .folder ? 3 : 1
         for i in 0..<count {
             let sheet = CALayer(); sheet.contents = image
-            sheet.bounds = CGRect(x: 0, y: 0, width: 66, height: 80)
+            sheet.bounds = CGRect(x: 0, y: 0, width: MachineArtwork.paperWidth, height: MachineArtwork.paperHeight)
             let dx = CGFloat(i) * 4
-            let start = CGPoint(x: 80 + dx, y: 43 + CGFloat(i) * 6)
-            let end = CGPoint(x: 80 + dx, y: -41)
+            let halfHeight = MachineArtwork.paperHeight / 2
+            let start = CGPoint(x: 80 + dx, y: halfHeight + 1 + CGFloat(i) * 2)
+            let end = CGPoint(x: 80 + dx, y: -halfHeight - 2)
             sheet.position = end; feeder.addSublayer(sheet)
             let position = CAKeyframeAnimation(keyPath: "position")
-            let sourceX = max(43, min(117, job.point.x - feeder.frame.minX))
-            position.values = [NSValue(point: CGPoint(x: sourceX + dx, y: 58 + CGFloat(i) * 6)), NSValue(point: start), NSValue(point: end)]
+            let margin = MachineArtwork.paperWidth / 2 + 4
+            let sourceX = max(margin, min(feeder.bounds.width - margin - dx, job.point.x - feeder.frame.minX))
+            position.values = [NSValue(point: CGPoint(x: sourceX + dx, y: halfHeight + 1 + CGFloat(i) * 2)), NSValue(point: start), NSValue(point: end)]
             position.keyTimes = [0, NSNumber(value: approach / (duration + approach)), 1]
             position.timingFunctions = [CAMediaTimingFunction(controlPoints: 0.2, 0.8, 0.2, 1), CAMediaTimingFunction(name: .linear)]
             position.duration = duration + approach; position.beginTime = CACurrentMediaTime() + Double(i) * 0.15
@@ -273,7 +271,7 @@ final class RevoView: NSView {
             let vibration = CAKeyframeAnimation(keyPath: "transform.translation.x")
             vibration.values = [0, 0.35, -0.35, 0.2, 0]; vibration.duration = 0.16; vibration.repeatCount = .infinity
             machine.add(vibration, forKey: "motor")
-            play(motorSound, volume: 0.16)
+            play(.motor, volume: 0.16)
         }
         emit(image, style: job.style, duration: duration, delay: approach + 0.17)
         DispatchQueue.main.asyncAfter(deadline: .now() + duration + approach + 0.55) { [weak self] in self?.finish(job) }
@@ -288,16 +286,16 @@ final class RevoView: NSView {
                 guard let piece = image.cropping(to: crop) else { continue }
                 let strip = CALayer(); strip.contents = piece
                 let height: CGFloat = style == .photo ? 6 : style == .video ? 24 : 28
-                strip.bounds = CGRect(x: 0, y: 0, width: 66 / CGFloat(columns) - 1, height: height)
-                let x = 44 + CGFloat(col) * 66 / CGFloat(columns)
-                let start = CGPoint(x: x, y: 79 + height / 2)
+                strip.bounds = CGRect(x: 0, y: 0, width: MachineArtwork.paperWidth / CGFloat(columns) - 1, height: height)
+                let x = (scraps.bounds.width - MachineArtwork.paperWidth) / 2 + (CGFloat(col) + 0.5) * MachineArtwork.paperWidth / CGFloat(columns)
+                let start = CGPoint(x: x, y: scraps.bounds.height + height / 2)
                 let pileHeight = min(15, CGFloat(pile.count) * 0.15)
                 let end = CGPoint(x: x + CGFloat.random(in: -19...19), y: 5 + pileHeight + CGFloat.random(in: 0...5))
                 strip.position = end
                 strip.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat.random(in: -0.9...0.9)).scaledBy(x: 1, y: 0.35))
                 scraps.addSublayer(strip); pile.append(strip)
                 let fall = CAKeyframeAnimation(keyPath: "position")
-                fall.values = [NSValue(point: start), NSValue(point: CGPoint(x: x, y: 35)), NSValue(point: end)]
+                fall.values = [NSValue(point: start), NSValue(point: CGPoint(x: x, y: scraps.bounds.height * 0.5)), NSValue(point: end)]
                 fall.keyTimes = [0, 0.65, 1]; fall.timingFunctions = [CAMediaTimingFunction(name: .linear), CAMediaTimingFunction(name: .easeIn)]
                 let curl = CABasicAnimation(keyPath: "transform"); curl.fromValue = CATransform3DIdentity; curl.toValue = strip.transform
                 let group = CAAnimationGroup(); group.animations = [fall, curl]
@@ -311,17 +309,17 @@ final class RevoView: NSView {
     }
     private func finish(_ job: Job) {
         machine.removeAnimation(forKey: "motor")
-        players.forEach { $0.stop() }; players.removeAll()
-        play(finishSound, volume: 0.12)
+        soundPlayer.stopAll()
+        play(.finish, volume: 0.12)
         setState(.idle)
         if !reducedMotion { spring(machine, key: "transform.translation.y", from: -1.2, to: 0) }
         showMessage(isPoweredOn ? (job.demo ? "Demo only. No files moved." : "Moved to Trash · Right-click to undo") : "Off · File drops are disabled.")
         if !queue.isEmpty { next() }
         else if dragActive && isPoweredOn { setState(.ready) }
     }
-    private func play(_ data: Data, volume: Float) {
-        guard !mute, let player = try? AVAudioPlayer(data: data) else { return }
-        players.removeAll { !$0.isPlaying }; player.volume = volume; players.append(player); player.play()
+    private func play(_ effect: SoundPlayer.Effect, volume: Float) {
+        guard !mute else { return }
+        soundPlayer.play(effect, volume: volume)
     }
 
     override func menu(for event: NSEvent) -> NSMenu? { makeMenu() }
@@ -350,7 +348,7 @@ final class RevoView: NSView {
         return menu
     }
     @objc private func demoMenu(_ sender: NSMenuItem) { demo([.document, .photo, .audio, .video, .folder][sender.tag]) }
-    @objc private func toggleSound() { mute.toggle(); if mute { players.forEach { $0.stop() } } }
+    @objc private func toggleSound() { mute.toggle(); if mute { soundPlayer.stopAll() } }
     @objc private func clearScraps() {
         let old = pile; pile.removeAll()
         CATransaction.begin(); CATransaction.setAnimationDuration(reducedMotion ? 0 : 0.3)

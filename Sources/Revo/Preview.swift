@@ -10,7 +10,7 @@ enum Preview {
         ctx.translateBy(x: 68, y: -6); ctx.scaleBy(x: 3.7, y: 3.7)
         ctx.draw(MachineArtwork.image(), in: CGRect(origin: .zero, size: MachineArtwork.size))
         ctx.draw(MachineArtwork.image(glass: true), in: CGRect(origin: .zero, size: MachineArtwork.size))
-        ctx.draw(MachineArtwork.shutter(), in: CGRect(x: 47, y: 189, width: 146, height: 7))
+        ctx.draw(MachineArtwork.shutter(), in: MachineArtwork.inlet)
         ctx.draw(MachineArtwork.button(), in: MachineArtwork.switchFrame)
         if let image = ctx.makeImage(), let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
             try? data.write(to: URL(fileURLWithPath: path))
@@ -31,7 +31,7 @@ enum Preview {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { capture("idle"); view.setPower(true) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.65) { capture("on"); view.demo(.photo) }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { capture("feeding") }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.12) { capture("feeding") }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) { capture("finished"); NSApp.terminate(nil) }
     }
 }
