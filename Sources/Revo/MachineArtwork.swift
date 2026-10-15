@@ -11,7 +11,7 @@ enum MachineArtwork {
     static let window = CGRect(x: 43, y: 62, width: 154, height: 107)
     static let shell = CGRect(x: 23, y: 49, width: 194, height: 206)
     static let glassFrame = CGRect(x: 23, y: 49, width: 194, height: 120)
-    static let inlet = CGRect(x: 47, y: slotY - 2, width: 146, height: 5)
+    static let inlet = CGRect(x: 47, y: slotY - 2, width: 146, height: 6)
     static let switchFrame = CGRect(x: 162, y: 180, width: 40, height: 24)
 
     static func color(_ hex: UInt32, _ alpha: CGFloat = 1) -> NSColor {
@@ -55,40 +55,43 @@ enum MachineArtwork {
         stroke(p, hex, alpha, width)
     }
 
-    /// One silhouette keeps the native backdrop inside the sloped glass enclosure.
-    static var outline: CGPath {
+    /// Circular fillets share tangent directions with the lid and upright sides.
+    private static func shoulder(inset: CGFloat = 0) -> CGMutablePath {
         let path = CGMutablePath()
-        path.move(to: CGPoint(x: 56, y: 255))
-        path.addLine(to: CGPoint(x: 184, y: 255))
-        path.addCurve(to: CGPoint(x: 202, y: 243), control1: CGPoint(x: 195, y: 255), control2: CGPoint(x: 198, y: 252))
-        path.addLine(to: CGPoint(x: 211, y: 225))
-        path.addCurve(to: CGPoint(x: 217, y: 207), control1: CGPoint(x: 216, y: 217), control2: CGPoint(x: 217, y: 213))
+        let left = 23 + inset, right = 217 - inset
+        let frontY = 217 + (2 - sqrt(5)) * inset
+        let backY = 255 - inset
+        let backLeft = 42 + (sqrt(5) - 1) * inset / 2
+        let backRight = 240 - backLeft
+        path.move(to: CGPoint(x: left, y: 200))
+        path.addArc(tangent1End: CGPoint(x: left, y: frontY),
+                    tangent2End: CGPoint(x: backLeft, y: backY), radius: 40 - inset)
+        path.addArc(tangent1End: CGPoint(x: backLeft, y: backY),
+                    tangent2End: CGPoint(x: backRight, y: backY), radius: 20 - inset)
+        path.addArc(tangent1End: CGPoint(x: backRight, y: backY),
+                    tangent2End: CGPoint(x: right, y: frontY), radius: 20 - inset)
+        path.addArc(tangent1End: CGPoint(x: right, y: frontY),
+                    tangent2End: CGPoint(x: right, y: 200), radius: 40 - inset)
+        path.addLine(to: CGPoint(x: right, y: 200))
+        return path
+    }
+
+    /// The body and metal head reuse one continuous shoulder contour.
+    static var outline: CGPath {
+        let path = shoulder()
         path.addLine(to: CGPoint(x: 217, y: 61))
         path.addQuadCurve(to: CGPoint(x: 205, y: 49), control: CGPoint(x: 217, y: 49))
         path.addLine(to: CGPoint(x: 35, y: 49))
         path.addQuadCurve(to: CGPoint(x: 23, y: 61), control: CGPoint(x: 23, y: 49))
-        path.addLine(to: CGPoint(x: 23, y: 207))
-        path.addCurve(to: CGPoint(x: 29, y: 225), control1: CGPoint(x: 23, y: 213), control2: CGPoint(x: 24, y: 217))
-        path.addLine(to: CGPoint(x: 38, y: 243))
-        path.addCurve(to: CGPoint(x: 56, y: 255), control1: CGPoint(x: 42, y: 252), control2: CGPoint(x: 45, y: 255))
         path.closeSubpath()
         return path
     }
 
-    /// The head includes its bevels and end caps; every interior pixel is opaque.
+    /// The metal terminates in a straight joint above the glass.
     static var headOutline: CGPath {
-        let path = CGMutablePath()
-        path.move(to: CGPoint(x: 56, y: 255))
-        path.addLine(to: CGPoint(x: 184, y: 255))
-        path.addCurve(to: CGPoint(x: 202, y: 243), control1: CGPoint(x: 195, y: 255), control2: CGPoint(x: 198, y: 252))
-        path.addLine(to: CGPoint(x: 211, y: 225))
-        path.addCurve(to: CGPoint(x: 217, y: 207), control1: CGPoint(x: 216, y: 217), control2: CGPoint(x: 217, y: 213))
+        let path = shoulder()
         path.addLine(to: CGPoint(x: 217, y: 169))
         path.addLine(to: CGPoint(x: 23, y: 169))
-        path.addLine(to: CGPoint(x: 23, y: 207))
-        path.addCurve(to: CGPoint(x: 29, y: 225), control1: CGPoint(x: 23, y: 213), control2: CGPoint(x: 24, y: 217))
-        path.addLine(to: CGPoint(x: 38, y: 243))
-        path.addCurve(to: CGPoint(x: 56, y: 255), control1: CGPoint(x: 42, y: 252), control2: CGPoint(x: 45, y: 255))
         path.closeSubpath()
         return path
     }
@@ -187,41 +190,43 @@ enum MachineArtwork {
 
         drawGlassInterior()
 
-        // Fill the complete head first, including the formerly clear perimeter.
         let head = NSBezierPath(cgPath: headOutline)
-        gradient(head, [(0xC4CED8, 1), (0xE6ECF1, 1), (0xA6B2BF, 1)], -90)
-        stroke(head, 0x8997A5, 0.85, 0.7)
+        gradient(head, [(0xF7F9FB, 1), (0xDCE4EB, 1), (0xC2CDD7, 1)], -90)
+        stroke(head, 0x8997A5, 0.72, 0.65)
 
-        // A softly rolled shoulder joins the receding lid to the front face.
-        let top = NSBezierPath()
-        top.move(to: CGPoint(x: 27, y: 217))
-        top.curve(to: CGPoint(x: 42, y: 245), controlPoint1: CGPoint(x: 29, y: 225), controlPoint2: CGPoint(x: 36, y: 238))
-        top.curve(to: CGPoint(x: 57, y: 252), controlPoint1: CGPoint(x: 46, y: 251), controlPoint2: CGPoint(x: 49, y: 252))
-        top.line(to: CGPoint(x: 183, y: 252))
-        top.curve(to: CGPoint(x: 198, y: 245), controlPoint1: CGPoint(x: 191, y: 252), controlPoint2: CGPoint(x: 194, y: 251))
-        top.curve(to: CGPoint(x: 213, y: 217), controlPoint1: CGPoint(x: 204, y: 238), controlPoint2: CGPoint(x: 211, y: 225))
-        top.close()
-        gradient(top, [(0xF8FAFC, 1), (0xDFE6ED, 1), (0xBCC8D3, 1)], -86)
-        let topHighlight = NSBezierPath()
-        topHighlight.move(to: CGPoint(x: 29, y: 220))
-        topHighlight.curve(to: CGPoint(x: 44, y: 245), controlPoint1: CGPoint(x: 33, y: 232), controlPoint2: CGPoint(x: 39, y: 240))
-        topHighlight.curve(to: CGPoint(x: 58, y: 252), controlPoint1: CGPoint(x: 48, y: 251), controlPoint2: CGPoint(x: 51, y: 252))
-        topHighlight.line(to: CGPoint(x: 182, y: 252))
-        stroke(topHighlight, 0xFFFFFF, 0.67, 1.1)
-
-        // This is the full structural face, with no inset plate or decorative capsule.
-        let face = NSBezierPath()
-        face.move(to: CGPoint(x: 23, y: 217))
-        face.line(to: CGPoint(x: 217, y: 217))
-        face.line(to: CGPoint(x: 217, y: 169))
-        face.line(to: CGPoint(x: 23, y: 169))
-        face.close()
         NSGraphicsContext.saveGraphicsState()
         head.addClip()
-        gradient(face, [(0xE7EDF2, 1), (0xCAD4DE, 1), (0xDFE6ED, 1)], -90)
-        gradient(NSBezierPath(rect: NSRect(x: 23, y: 169, width: 17, height: 48)), [(0xFFFFFF, 0.40), (0xFFFFFF, 0.06), (0xFFFFFF, 0)], 0)
-        gradient(NSBezierPath(rect: NSRect(x: 200, y: 169, width: 17, height: 48)), [(0x718494, 0), (0x718494, 0.04), (0x718494, 0.17)], 0)
-        gradient(NSBezierPath(rect: NSRect(x: 24, y: 212, width: 192, height: 7)), [(0xFFFFFF, 0), (0xFFFFFF, 0.48), (0xFFFFFF, 0)], -90)
+        // The reflection follows the same offset contour, with no independent corner patches.
+        let rim = NSBezierPath(cgPath: shoulder(inset: 2.3))
+        rim.lineWidth = 1.1
+        rim.lineCapStyle = .round
+        let context = NSGraphicsContext.current!.cgContext
+        context.saveGState()
+        context.addPath(rim.cgPath)
+        context.setLineWidth(1.1)
+        context.setLineCap(.round)
+        context.replacePathWithStrokedPath()
+        context.clip()
+        gradient(NSBezierPath(rect: CGRect(x: 23, y: 200, width: 194, height: 55)),
+                 [(0xFFFFFF, 0.74), (0xFFFFFF, 0.45), (0xFFFFFF, 0)], -90)
+        context.restoreGState()
+
+        // A broad rolled highlight blends the top into the front without a hard polygon seam.
+        let face = NSBezierPath(rect: CGRect(x: 23, y: 169, width: 194, height: 55))
+        let faceColors = [color(0xEDF2F6, 0), color(0xEDF2F6, 0.98),
+                          color(0xD1DBE4), color(0xDFE6ED)]
+        NSGradient(colors: faceColors, atLocations: [0, 0.2, 0.65, 1], colorSpace: .deviceRGB)!
+            .draw(in: face, angle: -90)
+        context.saveGState()
+        context.beginTransparencyLayer(auxiliaryInfo: nil)
+        gradient(NSBezierPath(rect: NSRect(x: 23, y: 169, width: 17, height: 48)), [(0xFFFFFF, 0.30), (0xFFFFFF, 0.04), (0xFFFFFF, 0)], 0)
+        gradient(NSBezierPath(rect: NSRect(x: 200, y: 169, width: 17, height: 48)), [(0x718494, 0), (0x718494, 0.03), (0x718494, 0.13)], 0)
+        context.setBlendMode(.destinationIn)
+        NSGradient(colors: [color(0xFFFFFF, 0), color(0xFFFFFF), color(0xFFFFFF)],
+                   atLocations: [0, 0.28, 1], colorSpace: .deviceRGB)!
+            .draw(in: NSBezierPath(rect: CGRect(x: 23, y: 169, width: 194, height: 48)), angle: -90)
+        context.endTransparencyLayer()
+        context.restoreGState()
         line(CGPoint(x: 23.5, y: 169.5), CGPoint(x: 216.5, y: 169.5), color: 0x6F8192, alpha: 0.38, width: 0.7)
         text("Revo", NSPoint(x: 45, y: 182), NSFont(name: "Georgia-Italic", size: 17) ?? .systemFont(ofSize: 17), 0x3B4653)
         NSGraphicsContext.restoreGraphicsState()
@@ -229,24 +234,18 @@ enum MachineArtwork {
         drawInlet()
     }
 
-    /// Project a capsule onto the lid so both end arcs share the metal's perspective.
+    /// A capsule is foreshortened as a single shape, preserving tangent end arcs.
+    /// Applying depth separately to control points would shear the semicircles.
     private static func inletProfile(_ rect: CGRect) -> NSBezierPath {
-        let depth = rect.height / (0.19 * (vanishingPoint.y - rect.minY))
-        func point(_ x: CGFloat, _ v: CGFloat) -> CGPoint {
-            recede(CGPoint(x: x, y: rect.minY), depth: v * depth)
-        }
-        let radius = rect.height / 2
-        let left = rect.minX + radius, right = rect.maxX - radius
-        let k: CGFloat = 0.55228475
-        let path = NSBezierPath()
-        path.move(to: point(left, 0))
-        path.line(to: point(right, 0))
-        path.curve(to: point(rect.maxX, 0.5), controlPoint1: point(right + radius * k, 0), controlPoint2: point(rect.maxX, 0.5 - 0.5 * k))
-        path.curve(to: point(right, 1), controlPoint1: point(rect.maxX, 0.5 + 0.5 * k), controlPoint2: point(right + radius * k, 1))
-        path.line(to: point(left, 1))
-        path.curve(to: point(rect.minX, 0.5), controlPoint1: point(left - radius * k, 1), controlPoint2: point(rect.minX, 0.5 + 0.5 * k))
-        path.curve(to: point(left, 0), controlPoint1: point(rect.minX, 0.5 - 0.5 * k), controlPoint2: point(left - radius * k, 0))
-        path.close()
+        let depthScale: CGFloat = 0.62
+        let plane = CGRect(x: rect.minX, y: 0, width: rect.width,
+                           height: rect.height / depthScale)
+        let path = NSBezierPath(roundedRect: plane, xRadius: plane.height / 2,
+                                yRadius: plane.height / 2)
+        var projection = AffineTransform()
+        projection.translate(x: 0, y: rect.minY)
+        projection.scale(x: 1, y: depthScale)
+        path.transform(using: projection)
         return path
     }
 
@@ -269,9 +268,12 @@ enum MachineArtwork {
         NSGraphicsContext.saveGraphicsState()
         opening.addClip()
         gradient(NSBezierPath(rect: CGRect(x: inlet.minX, y: inlet.maxY - 2.1, width: inlet.width, height: 2.1)), [(0x030A12, 0.90), (0x030A12, 0)], -90)
-        line(CGPoint(x: 51, y: inlet.maxY - 0.35), CGPoint(x: 189, y: inlet.maxY - 0.35), color: 0x020910, alpha: 0.75, width: 0.55)
         NSGraphicsContext.restoreGraphicsState()
-        line(CGPoint(x: 50, y: inlet.minY - 0.65), CGPoint(x: 190, y: inlet.minY - 0.65), color: 0xFFFFFF, alpha: 0.72, width: 0.55)
+        NSGraphicsContext.saveGraphicsState()
+        NSBezierPath(rect: CGRect(x: inlet.minX - 2, y: inlet.minY - 2,
+                                 width: inlet.width + 4, height: inlet.height / 2 + 2)).addClip()
+        stroke(bevel, 0xFFFFFF, 0.65, 0.5)
+        NSGraphicsContext.restoreGraphicsState()
     }
 
     private static func drawGlass() {
