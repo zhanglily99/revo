@@ -10,7 +10,7 @@ enum MachineArtwork {
     static let paperHeight: CGFloat = 94
     static let window = CGRect(x: 43, y: 62, width: 154, height: 87)
     static let shell = CGRect(x: 23, y: 49, width: 194, height: 186)
-    static let glassFrame = CGRect(x: 23, y: 49, width: 194, height: 103)
+    static let glassFrame = CGRect(x: 23, y: 49, width: 194, height: 100)
     static let inlet = CGRect(x: 47, y: slotY - 3, width: 146, height: 7)
     static let switchFrame = CGRect(x: 162, y: 160, width: 40, height: 24)
 
@@ -83,10 +83,8 @@ enum MachineArtwork {
         path.addQuadCurve(to: CGPoint(x: 201, y: 230), control: CGPoint(x: 199, y: 235))
         path.addLine(to: CGPoint(x: 215, y: 202))
         path.addQuadCurve(to: CGPoint(x: 217, y: 193), control: CGPoint(x: 217, y: 198))
-        path.addLine(to: CGPoint(x: 217, y: 159))
-        path.addQuadCurve(to: CGPoint(x: 207, y: 149), control: CGPoint(x: 217, y: 149))
-        path.addLine(to: CGPoint(x: 33, y: 149))
-        path.addQuadCurve(to: CGPoint(x: 23, y: 159), control: CGPoint(x: 23, y: 149))
+        path.addLine(to: CGPoint(x: 217, y: 149))
+        path.addLine(to: CGPoint(x: 23, y: 149))
         path.addLine(to: CGPoint(x: 23, y: 193))
         path.addQuadCurve(to: CGPoint(x: 25, y: 202), control: CGPoint(x: 23, y: 198))
         path.addLine(to: CGPoint(x: 39, y: 230))
@@ -98,8 +96,8 @@ enum MachineArtwork {
     /// The glass material stops beneath the solid metal head.
     static var glassOutline: CGPath {
         let path = CGMutablePath()
-        path.move(to: CGPoint(x: 23, y: 152))
-        path.addLine(to: CGPoint(x: 217, y: 152))
+        path.move(to: CGPoint(x: 23, y: 149))
+        path.addLine(to: CGPoint(x: 217, y: 149))
         path.addLine(to: CGPoint(x: 217, y: 67))
         path.addQuadCurve(to: CGPoint(x: 199, y: 49), control: CGPoint(x: 217, y: 49))
         path.addLine(to: CGPoint(x: 41, y: 49))
@@ -140,17 +138,15 @@ enum MachineArtwork {
         let face = NSBezierPath()
         face.move(to: CGPoint(x: 23, y: 197))
         face.line(to: CGPoint(x: 217, y: 197))
-        face.line(to: CGPoint(x: 217, y: 159))
-        face.curve(to: CGPoint(x: 207, y: 149), controlPoint1: CGPoint(x: 217, y: 152), controlPoint2: CGPoint(x: 214, y: 149))
-        face.line(to: CGPoint(x: 33, y: 149))
-        face.curve(to: CGPoint(x: 23, y: 159), controlPoint1: CGPoint(x: 26, y: 149), controlPoint2: CGPoint(x: 23, y: 152))
+        face.line(to: CGPoint(x: 217, y: 149))
+        face.line(to: CGPoint(x: 23, y: 149))
         face.close()
         NSGraphicsContext.saveGraphicsState()
         head.addClip()
         gradient(face, [(0xE3E8ED, 1), (0xC3CDD6, 1), (0xD4DCE4, 1)], -90)
         line(CGPoint(x: 25, y: 197), CGPoint(x: 215, y: 197), color: 0xFFFFFF, alpha: 0.87, width: 0.9)
         line(CGPoint(x: 26, y: 195.8), CGPoint(x: 214, y: 195.8), color: 0x718291, alpha: 0.20, width: 0.55)
-        line(CGPoint(x: 34, y: 149.5), CGPoint(x: 206, y: 149.5), color: 0x6F8192, alpha: 0.38, width: 0.7)
+        line(CGPoint(x: 23.5, y: 149.5), CGPoint(x: 216.5, y: 149.5), color: 0x6F8192, alpha: 0.38, width: 0.7)
         text("Revo", NSPoint(x: 45, y: 162), NSFont(name: "Georgia-Italic", size: 17) ?? .systemFont(ofSize: 17), 0x3B4653)
         NSGraphicsContext.restoreGraphicsState()
 
@@ -196,7 +192,7 @@ enum MachineArtwork {
         gradient(rounded(NSRect(x: 40, y: 53, width: 160, height: 10), 5), [(0xFFFFFF, 0.06), (0xC4D8E9, 0.25), (0xFFFFFF, 0.77), (0xFFFFFF, 0.02)])
         line(CGPoint(x: 44, y: 55), CGPoint(x: 193, y: 55), color: 0xFFFFFF, alpha: 0.84, width: 1)
         // A narrow contact shadow separates the solid head from the glass below it.
-        gradient(rounded(NSRect(x: 30, y: 142, width: 180, height: 9), 4), [(0x536779, 0.16), (0x536779, 0)], -90)
+        gradient(NSBezierPath(rect: NSRect(x: 23, y: 141, width: 194, height: 8)), [(0x536779, 0.16), (0x536779, 0)], -90)
         NSGraphicsContext.restoreGraphicsState()
     }
 
