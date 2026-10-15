@@ -1,4 +1,5 @@
 import AppKit
+import CoreText
 
 /// An opaque aluminum head sits above a clear enclosure with refractive edges.
 /// The aperture and animation masks share the same physical coordinates.
@@ -197,6 +198,24 @@ enum MachineArtwork {
         // A narrow contact shadow separates the solid head from the glass below it.
         gradient(rounded(NSRect(x: 30, y: 142, width: 180, height: 9), 4), [(0x536779, 0.16), (0x536779, 0)], -90)
         NSGraphicsContext.restoreGraphicsState()
+    }
+
+    /// Center the visible glyphs, rather than the font's line box, on the control axis.
+    static func powerLabel(isPoweredOn: Bool) -> CGImage {
+        let labelSize = NSSize(width: 37, height: 15)
+        return raster(labelSize) {
+            let font = NSFont.systemFont(ofSize: 8, weight: .semibold)
+            let attributes: [NSAttributedString.Key: Any] = [
+                NSAttributedString.Key(kCTFontAttributeName as String): CTFontCreateWithName(font.fontName as CFString, font.pointSize, nil),
+                NSAttributedString.Key(kCTForegroundColorAttributeName as String): color(0x465361).cgColor
+            ]
+            let line = CTLineCreateWithAttributedString(NSAttributedString(string: isPoweredOn ? "ON" : "OFF", attributes: attributes))
+            let ink = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
+            let context = NSGraphicsContext.current!.cgContext
+            context.textMatrix = .identity
+            context.textPosition = CGPoint(x: -ink.minX, y: (labelSize.height - ink.height) / 2 - ink.minY)
+            CTLineDraw(line, context)
+        }
     }
 
     static func shutter() -> CGImage {

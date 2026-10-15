@@ -12,7 +12,7 @@ final class RevoView: NSView {
     private let feeder = CALayer()
     private let scraps = CALayer()
     private let powerSwitch = NSSwitch(frame: MachineArtwork.switchFrame)
-    private let powerLabel = CATextLayer()
+    private let powerLabel = CALayer()
     private let shutter = CALayer()
     private let backdrop = GlassBackdrop(frame: MachineArtwork.glassFrame)
     private let led = CALayer()
@@ -66,12 +66,10 @@ final class RevoView: NSView {
         glow.shadowColor = MachineArtwork.color(0xBFD9FF).cgColor; glow.shadowRadius = 4; glow.shadowOpacity = 0.6; machine.addSublayer(glow)
         shutter.frame = MachineArtwork.inlet
         shutter.contents = MachineArtwork.shutter(); machine.addSublayer(shutter)
-        led.frame = CGRect(x: 106, y: 170, width: 4, height: 4); led.cornerRadius = 2
+        let controlCenterY = MachineArtwork.switchFrame.midY
+        led.frame = CGRect(x: 106, y: controlCenterY - 2, width: 4, height: 4); led.cornerRadius = 2
         machine.addSublayer(led)
-        powerLabel.frame = CGRect(x: 116, y: 165, width: 37, height: 15)
-        powerLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold); powerLabel.fontSize = 8
-        powerLabel.contentsScale = NSScreen.main?.backingScaleFactor ?? 2
-        powerLabel.foregroundColor = MachineArtwork.color(0x465361).cgColor
+        powerLabel.frame = CGRect(x: 116, y: controlCenterY - 7.5, width: 37, height: 15)
         machine.addSublayer(powerLabel)
         powerSwitch.target = self; powerSwitch.action = #selector(togglePower)
         powerSwitch.appearance = NSAppearance(named: .aqua)
@@ -134,7 +132,7 @@ final class RevoView: NSView {
 
     private func updatePowerPresentation() {
         powerSwitch.state = isPoweredOn ? .on : .off
-        powerLabel.string = isPoweredOn ? "ON" : "OFF"
+        powerLabel.contents = MachineArtwork.powerLabel(isPoweredOn: isPoweredOn)
         toolTip = isPoweredOn ? "Drop a file to move it to Trash. Right-click to undo." : "Revo is off. Turn on the switch to accept files."
         CATransaction.begin(); CATransaction.setAnimationDuration(reducedMotion ? 0 : 0.22)
         shutter.opacity = isPoweredOn ? 0 : 1
