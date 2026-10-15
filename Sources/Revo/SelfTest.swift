@@ -2,6 +2,33 @@ import AppKit
 
 enum SelfTest {
     static func run() {
+        // Compare gentle movement with a sharp shake, then verify bounded settling.
+        func excursion(_ force: CGFloat) -> (height: CGFloat, travel: CGFloat, spin: CGFloat) {
+            var paper = PaperMotion(variation: 1)
+            paper.impulse(CGPoint(x: force, y: 0))
+            var height: CGFloat = 0, travel: CGFloat = 0, spin: CGFloat = 0
+            for _ in 0..<600 {
+                paper.step(1.0 / 120, horizontalRange: -30...30)
+                height = max(height, paper.offset.y)
+                travel = max(travel, abs(paper.offset.x))
+                spin = max(spin, abs(paper.angle))
+            }
+            precondition(paper.isSettled, "Paper did not settle after movement stopped")
+            return (height, travel, spin)
+        }
+        let gentle = excursion(18), strong = excursion(180)
+        precondition(strong.height > gentle.height * 2 && strong.travel > gentle.travel * 2)
+        precondition(strong.spin > gentle.spin * 2)
+        var shaken = PaperMotion(variation: 1.4)
+        for tick in 0..<480 {
+            if tick % 6 == 0 { shaken.impulse(CGPoint(x: tick % 12 == 0 ? 900 : -900, y: 500)) }
+            shaken.step(1.0 / 120, horizontalRange: -22...22)
+            precondition((-22...22).contains(shaken.offset.x) && (0...62).contains(shaken.offset.y))
+            precondition(shaken.angle.isFinite && shaken.intensity.isFinite)
+        }
+        for _ in 0..<960 { shaken.step(1.0 / 120, horizontalRange: -22...22) }
+        precondition(shaken.isSettled)
+        print("PASS: shake strength response, fragment bounds, and natural settling")
         var gate = PowerQueue<Int>()
         precondition(!gate.isPoweredOn)
         precondition(!gate.append(contentsOf: [1]))

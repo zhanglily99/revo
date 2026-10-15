@@ -9,7 +9,7 @@ A tiny native macOS desktop companion that turns letting go of files into a smal
 
 ## The little machine
 
-A solid silver head, clear glass enclosure, layered edge reflections, and a compact tactile power switch. Its raised silver thumb slides into a soft mint-green track when on and returns to silver-gray when off. A recessed seven-segment display beside it shows the number of files successfully recycled today, including across app launches. Undo reduces the count; demos and failed operations never increase it. A gently elevated viewpoint reveals the receding top plane and a continuous metal front face. The metal head has softly rolled shoulders and a continuous front face above a taller glass enclosure. Larger file previews align with the inlet before feeding into the glass enclosure. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Its side walls and floor recede toward the same vanishing point as the metal top, and paper scraps settle across that floor. Reduce Transparency replaces the glass with a solid native backdrop. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 297 points.
+A solid silver head, clear glass enclosure, layered edge reflections, and a compact tactile power switch. Its raised silver thumb slides into a soft mint-green track when on and returns to silver-gray when off. A recessed seven-segment display beside it shows the number of files successfully recycled today, including across app launches. Undo reduces the count; demos and failed operations never increase it. A gently elevated viewpoint reveals the receding top plane and a continuous metal front face. The metal head has softly rolled shoulders and a continuous front face above a taller glass enclosure. Larger file previews align with the inlet before feeding into the glass enclosure. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Its side walls and floor recede toward the same vanishing point as the metal top, and paper scraps settle across that floor. Reduce Transparency replaces the glass with a solid native backdrop. The capsule inlet uses a narrow upper shadow, blue-gray interior gradient, and a soft silver reflection along the lower lip. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 297 points.
 
 - Documents become narrow paper strips.
 - Photos use a thumbnail and break into confetti.
@@ -31,7 +31,7 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 | Turn the power switch on | Open the inlet and enable file drops, with a soft mechanical click |
 | Turn the power switch off | Reject file drops and cancel waiting jobs, with a lower-pitched click |
 | Drop one or more files while on | Move them to Trash and play the animation after success |
-| Drag the machine body | Reposition it; the location is remembered |
+| Drag the machine body | Reposition it; loose paper sways with the movement and rustles more strongly when shaken |
 | Right-click → Try It, while on | Preview each animation without moving files |
 | Right-click → Undo Last File | Restore the most recently recycled file during this session |
 | Right-click → Clear Paper Scraps | Clear the visual scraps inside the machine |
@@ -41,6 +41,8 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 Undo refuses to overwrite a file that already occupies the original location. Files can also be recovered through Finder's Trash. Revo has no permanent-delete or empty-Trash action.
 
 A folder is recycled as one item. Its three animated sheets are a visual treatment, rather than a count of its contents. Duplicate URLs and parent/child paths dropped together are filtered before processing.
+
+Moving the machine gives settled scraps individual inertia, lift, and rotation. Stronger movement produces larger, denser motion and louder, faster paper rustles. Fragments stay inside the enclosure and settle after movement stops; the motion timer and rustle audio stop at rest. An empty enclosure stays silent. The Sound setting also mutes these rustles. The location is remembered.
 
 Revo respects the system's Reduce Motion and Reduce Transparency settings. At rest, there are no repeating animations or polling timers. The visible paper pile is capped at 90 fragments.
 
@@ -70,7 +72,7 @@ swift build -c release --product Revo
 .build/release/Revo --preview "$PWD/build/preview"
 ```
 
-The self-test creates disposable temporary fixtures and checks the default-off interlock, rejected file drops, cancellation of waiting jobs, file classification, recycling, restoration, same-name conflict protection, and failure for a missing source file. It never uses existing user files.
+The self-test compares gentle and strong shakes, verifies fragment bounds and eventual settling, then creates disposable temporary fixtures and checks the default-off interlock, rejected file drops, cancellation of waiting jobs, file classification, recycling, restoration, same-name conflict protection, and failure for a missing source file. It never uses existing user files.
 
 Preview mode renders off, on, feeding, and finished screenshots using demo sheets. It does not recycle any files.
 
@@ -83,6 +85,7 @@ Preview mode renders off, on, feeding, and finished screenshots using demo sheet
 | `RevoView.swift` | Drag and drop, animation queue, menus, and feedback |
 | `MachineArtwork.swift` | Translucent enclosure, metal inlet, and shutter |
 | `GlassBackdrop.swift` | Native diffusion inside the lower glass and accessibility fallback |
+| `PaperMotion.swift` | Bounded fragment inertia, bounce, and damping |
 | `PowerSwitch.swift` | Tactile switch artwork, native button tracking, and accessible power control |
 | `PowerQueue.swift` | Default-off interlock and waiting-job cancellation |
 | `PaperSprite.swift` | File-specific paper previews and bounded photo thumbnails |

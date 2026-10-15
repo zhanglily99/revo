@@ -264,10 +264,14 @@ enum MachineArtwork {
         stroke(bevel, 0x718291, 0.25, 0.35)
 
         let opening = inletProfile(inlet)
-        gradient(opening, [(0x101923, 1), (0x293642, 1)], -90)
+        NSGradient(colors: [color(0x526371), color(0x243541), color(0x3F5362), color(0x8CA0AF)],
+                   atLocations: [0, 0.22, 0.58, 1], colorSpace: .deviceRGB)!
+            .draw(in: opening, angle: -90)
         NSGraphicsContext.saveGraphicsState()
         opening.addClip()
-        gradient(NSBezierPath(rect: CGRect(x: inlet.minX, y: inlet.maxY - 2.1, width: inlet.width, height: 2.1)), [(0x030A12, 0.90), (0x030A12, 0)], -90)
+        gradient(NSBezierPath(rect: CGRect(x: inlet.minX, y: inlet.minY, width: inlet.width, height: 1.5)),
+                 [(0xDFEAF1, 0), (0xDFEAF1, 0.48)], -90)
+        gradient(NSBezierPath(rect: CGRect(x: inlet.minX, y: inlet.maxY - 0.9, width: inlet.width, height: 0.9)), [(0x12212D, 0.50), (0x12212D, 0)], -90)
         NSGraphicsContext.restoreGraphicsState()
         NSGraphicsContext.saveGraphicsState()
         NSBezierPath(rect: CGRect(x: inlet.minX - 2, y: inlet.minY - 2,

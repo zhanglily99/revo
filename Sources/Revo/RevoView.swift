@@ -19,6 +19,21 @@ final class RevoView: NSView {
     private let caption = CATextLayer()
     private var pile: [CALayer] = []
     private let soundPlayer = SoundPlayer()
+    private struct MovingFragment {
+        let layer: CALayer
+        let anchor: CGPoint
+        let transform: CATransform3D
+        var motion: PaperMotion
+    }
+    private var movingFragments: [ObjectIdentifier: MovingFragment] = [:]
+    private var motionTimer: Timer?
+    private var previousOrigin: CGPoint?
+    private var previousMoveTime: TimeInterval = 0
+    private var previousVelocity = CGPoint.zero
+    private var motionTime: TimeInterval = 0
+    private var rustleTime: TimeInterval = 0
+    private var dragOrigin: CGPoint?
+    private var dragPointer = CGPoint.zero
     private var hovered = false
     private var dragActive = false
     private var messageVersion = 0
@@ -94,12 +109,113 @@ final class RevoView: NSView {
         hovered = false
         if state == .idle { caption.opacity = 0 }
     }
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func mouseDown(with event: NSEvent) {
-        window?.performDrag(with: event)
+        dragOrigin = window?.frame.origin
+        dragPointer = window?.convertPoint(toScreen: event.locationInWindow) ?? .zero
+        previousOrigin = dragOrigin
+        previousMoveTime = ProcessInfo.processInfo.systemUptime
+        previousVelocity = .zero
+    }
+    override func mouseDragged(with event: NSEvent) {
+        guard let dragOrigin, let window else { return }
+        let pointer = window.convertPoint(toScreen: event.locationInWindow)
+        let origin = CGPoint(x: dragOrigin.x + pointer.x - dragPointer.x,
+                             y: dragOrigin.y + pointer.y - dragPointer.y)
+        window.setFrameOrigin(origin)
+        machineMoved(to: window.frame.origin)
+    }
+    override func mouseUp(with event: NSEvent) {
+        guard dragOrigin != nil else { return }
+        dragOrigin = nil
+        // Stopping the enclosure gives the loose paper one final inertial impulse.
+        let stopEnergy = exp(-max(0, ProcessInfo.processInfo.systemUptime - previousMoveTime) * 16)
+        kickPaper(CGPoint(x: previousVelocity.x * 0.1 * stopEnergy, y: previousVelocity.y * 0.07 * stopEnergy))
+        previousVelocity = .zero
+        previousOrigin = nil
         (window as? RevoPanel)?.savePosition()
     }
 
-    deinit { NSWorkspace.shared.notificationCenter.removeObserver(self) }
+    deinit {
+        motionTimer?.invalidate()
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+    }
+
+    private func machineMoved(to origin: CGPoint) {
+        let now = ProcessInfo.processInfo.systemUptime
+        defer { previousOrigin = origin; previousMoveTime = now }
+        guard let previousOrigin else { return }
+        let dt = max(1.0 / 120, min(0.1, now - previousMoveTime))
+        let delta = CGPoint(x: origin.x - previousOrigin.x, y: origin.y - previousOrigin.y)
+        let velocity = CGPoint(x: max(-1800, min(1800, delta.x / dt)),
+                               y: max(-1800, min(1800, delta.y / dt)))
+        let impulse = CGPoint(x: (previousVelocity.x - velocity.x) * 0.11 - delta.x * 0.32,
+                              y: (previousVelocity.y - velocity.y) * 0.08 - delta.y * 0.22)
+        previousVelocity = velocity
+        kickPaper(impulse)
+    }
+
+    private func kickPaper(_ impulse: CGPoint) {
+        guard !reducedMotion, !pile.isEmpty, hypot(impulse.x, impulse.y) > 0.3 else { return }
+        for (index, fragment) in pile.enumerated() where fragment.animation(forKey: "cut") == nil {
+            let id = ObjectIdentifier(fragment)
+            if movingFragments[id] == nil {
+                movingFragments[id] = MovingFragment(layer: fragment, anchor: fragment.position,
+                    transform: fragment.transform, motion: PaperMotion(variation: 0.65 + CGFloat((index * 17) % 23) / 24))
+            }
+            movingFragments[id]?.motion.impulse(impulse)
+        }
+        guard !movingFragments.isEmpty, motionTimer == nil else { return }
+        motionTime = ProcessInfo.processInfo.systemUptime
+        let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.stepPaperMotion() }
+        timer.tolerance = 0.002
+        motionTimer = timer
+        // Keep fragment integration responsive during mouse tracking and open menus.
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func stepPaperMotion() {
+        let now = ProcessInfo.processInfo.systemUptime
+        let dt = CGFloat(max(1.0 / 240, min(1.0 / 30, now - motionTime)))
+        motionTime = now
+        let live = Set(pile.map(ObjectIdentifier.init))
+        var active = false
+        var intensity: CGFloat = 0
+        var pan: CGFloat = 0
+        CATransaction.begin(); CATransaction.setDisableActions(true)
+        for id in Array(movingFragments.keys) {
+            guard var fragment = movingFragments[id], live.contains(id), !reducedMotion else {
+                if let fragment = movingFragments.removeValue(forKey: id) {
+                    fragment.layer.position = fragment.anchor; fragment.layer.transform = fragment.transform
+                }
+                continue
+            }
+            let halfWidth = max(8, fragment.layer.bounds.width / 2)
+            let range = (halfWidth - fragment.anchor.x)...(scraps.bounds.width - halfWidth - fragment.anchor.x)
+            fragment.motion.step(dt, horizontalRange: range)
+            fragment.layer.position = CGPoint(x: fragment.anchor.x + fragment.motion.offset.x,
+                                               y: fragment.anchor.y + fragment.motion.offset.y)
+            let tilt = CATransform3DMakeRotation(fragment.motion.angle, 0, 0, 1)
+            let lift = CATransform3DMakeScale(1, 1 + min(1.1, fragment.motion.offset.y / 25), 1)
+            fragment.layer.transform = CATransform3DConcat(fragment.transform, CATransform3DConcat(tilt, lift))
+            active = active || !fragment.motion.isSettled
+            intensity += fragment.motion.intensity
+            pan += fragment.motion.velocity.x
+            movingFragments[id] = fragment
+        }
+        CATransaction.commit()
+        if now - rustleTime > 0.065 || !active {
+            rustleTime = now
+            let count = CGFloat(max(1, movingFragments.count))
+            let amount = min(1, intensity / count * min(1, count / 12))
+            soundPlayer.rustle(intensity: mute || !active ? 0 : Float(amount),
+                               pan: Float(max(-0.4, min(0.4, pan / count / 250))))
+        }
+        if !active {
+            motionTimer?.invalidate(); motionTimer = nil
+            movingFragments.removeAll()
+        }
+    }
 
     @objc private func updateTransparency() {
         let reduce = NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency

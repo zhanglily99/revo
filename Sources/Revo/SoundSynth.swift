@@ -91,6 +91,32 @@ enum SoundSynth {
         return wav(samples)
     }
 
+    /// Sparse, overlapping friction grains resemble loose paper rather than a motor.
+    static func rustleData() -> Data {
+        let duration = 2.1
+        let n = Int(Double(sampleRate) * duration)
+        let grains = (0..<64).map { _ in
+            (start: Double.random(in: 0..<duration), length: Double.random(in: 0.012...0.10),
+             amplitude: Double.random(in: 0.12...0.9))
+        }
+        var low = 0.0, high = 0.0
+        var samples = [Int16](repeating: 0, count: n)
+        for i in 0..<n {
+            let t = Double(i) / Double(sampleRate)
+            let white = Double.random(in: -1...1)
+            low = low * 0.86 + white * 0.14
+            high = high * 0.32 + white * 0.68
+            var envelope = 0.035
+            for grain in grains {
+                let phase = (t - grain.start + duration).truncatingRemainder(dividingBy: duration) / grain.length
+                if phase < 1 { envelope += pow(sin(.pi * phase), 2) * grain.amplitude }
+            }
+            let sample = (high - low) * min(1.3, envelope) * 0.55
+            samples[i] = Int16(max(-1, min(1, sample)) * 32767)
+        }
+        return wav(samples)
+    }
+
     private static func wav(_ samples: [Int16]) -> Data {
         let dataSize = samples.count * 2
         var d = Data()
