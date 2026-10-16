@@ -7,9 +7,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var globalShortcut: GlobalShortcut?
     private var shortcutSettings: ShortcutSettings?
     func applicationDidFinishLaunching(_ notification: Notification) {
-        if let index = CommandLine.arguments.firstIndex(of: "--export-icon"), CommandLine.arguments.count > index + 1 {
-            Preview.exportIcon(path: CommandLine.arguments[index + 1]); NSApp.terminate(nil); return
-        }
         if CommandLine.arguments.contains("--self-test") { SelfTest.run(); return }
         let panel = RevoPanel(); panel.placeAtDefaultCorner(); self.panel = panel
         panel.orderFrontRegardless()

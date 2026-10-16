@@ -3,21 +3,6 @@ import QuartzCore
 
 /// Explicit developer preview; demo jobs never touch files.
 enum Preview {
-    static func exportIcon(path: String) {
-        let ctx = CGContext(data: nil, width: 1024, height: 1024, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
-        ctx.setFillColor(MachineArtwork.color(0xE9EDF3).cgColor)
-        ctx.addPath(CGPath(roundedRect: CGRect(x: 42, y: 42, width: 940, height: 940), cornerWidth: 208, cornerHeight: 208, transform: nil)); ctx.fillPath()
-        ctx.translateBy(x: 68, y: -6); ctx.scaleBy(x: 3.7, y: 3.7)
-        ctx.draw(MachineArtwork.image(), in: CGRect(origin: .zero, size: MachineArtwork.size))
-        ctx.draw(MachineArtwork.image(glass: true), in: CGRect(origin: .zero, size: MachineArtwork.size))
-        ctx.draw(MachineArtwork.shutter(), in: MachineArtwork.inlet)
-        ctx.draw(MachineArtwork.counter(count: 0, powered: false), in: MachineArtwork.counterFrame)
-        ctx.draw(MachineArtwork.button(), in: MachineArtwork.switchFrame)
-        if let image = ctx.makeImage(), let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
-            try? data.write(to: URL(fileURLWithPath: path))
-        }
-    }
-
     static func export(panel: RevoPanel, directory: String) {
         try? FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
         guard let view = panel.contentView as? RevoView else { exit(1) }

@@ -1,5 +1,9 @@
 # Revo
 
+<p align="center">
+  <img src="Resources/AppIcon.png" alt="Revo's silver and liquid-glass paper shredder icon" width="128">
+</p>
+
 A tiny native macOS desktop companion that turns letting go of files into a small, tactile ritual. Turn Revo on, drop a file into the slot, and watch it become paper scraps. The real file moves to macOS Trash and remains recoverable.
 
 <p align="center">
@@ -33,7 +37,11 @@ This is not the MIT License or an OSI-approved open source license. The license 
 
 ## Use Revo
 
-Open `build/Revo.app`. Revo appears near the bottom-right corner of your desktop, with its power switch **off**.
+Download the DMG from [Releases](https://github.com/zhanglily99/revo/releases), open it, and drag Revo to Applications. Builds require macOS 14 or later and support both Apple silicon and Intel. Release downloads inherit the repository's access permissions.
+
+The current release has an ad-hoc signature and has not been notarized by Apple. macOS may block its first launch. Review [Apple's guidance for opening downloaded apps](https://support.apple.com/en-us/102445) and proceed only if you trust the source. Revo does not change system security settings.
+
+Open Revo from Applications, or open `build/Revo.app` when building locally. Revo appears near the bottom-right corner of your desktop, with its power switch **off**.
 
 Turn the switch on before dropping files. When off, Revo rejects drops and closes the inlet shutter. Power is never remembered across launches. Switching off during a batch discards all waiting jobs; the one file operation already in progress finishes. Turning it on again does not resume discarded jobs. Drag those files in again if you still want to recycle them.
 
@@ -78,13 +86,27 @@ cd revo
 open build/Revo.app
 ```
 
-The script builds the executable, generates the app icon, packages `Revo.app`, and applies a local ad-hoc signature. Distribution signing and notarization are not configured.
+The script builds the executable, creates the icon size variants from `Resources/AppIcon.png`, packages `Revo.app` with its license, and applies a local ad-hoc signature. Distribution signing and notarization are not configured. Use `REVO_UNIVERSAL=1 ./scripts/build-app.sh` for a universal binary with Apple silicon and Intel slices.
 
 To build just the executable:
 
 ```sh
 swift build -c release --product Revo
 ```
+
+## Package a release
+
+Quit Revo before replacing its local app bundle. Install the packaging tools in an isolated environment, then build the universal DMG:
+
+```sh
+python3 -m venv .build/packaging-venv
+.build/packaging-venv/bin/python -m pip install -r scripts/packaging-requirements.txt
+./scripts/package-release.sh
+```
+
+The package includes a Retina installation background and an Applications shortcut. Artifacts are written to `build/release/`: the versioned DMG, `LICENSE.txt`, and `SHA256SUMS.txt`. The script verifies the disk image, app signature, and both binary architectures. It refuses to overwrite an existing versioned DMG. Packaging tools are build-time dependencies only.
+
+See [the icon design record](docs/branding.md) for the artwork source and generation prompts.
 
 ## Verify and preview
 
@@ -121,4 +143,4 @@ Preview mode renders off, on, roller-catch, feeding, and finished screenshots us
 | `SoundPlayer.swift` | Background audio preparation and playback |
 | `Stats.swift` | Local daily count |
 | `SelfTest.swift` | Disposable file-operation checks |
-| `Preview.swift` | Screenshot and icon export |
+| `Preview.swift` | Screenshot export |
