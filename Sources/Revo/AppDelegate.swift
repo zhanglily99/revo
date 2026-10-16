@@ -19,6 +19,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let shortcut = GlobalShortcut()
         shortcut.onTrigger = { [weak self] in self?.togglePanel() }
         globalShortcut = shortcut
+        // AppKit otherwise appends new items beyond the visible area on crowded, notched displays.
+        // Seed only the initial position so subsequent user rearrangements remain intact.
+        let positionKey = "NSStatusItem Preferred Position RevoMenuBar"
+        if UserDefaults.standard.object(forKey: positionKey) == nil {
+            UserDefaults.standard.set(280.0, forKey: positionKey)
+        }
         let status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         status.autosaveName = "RevoMenuBar"
         status.behavior = []

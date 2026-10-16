@@ -47,6 +47,8 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 
 Revo keeps a small monochrome icon in the macOS menu bar while running. Hiding the desktop machine keeps this icon available; clicking it shows Revo without changing its power state. The icon adapts to light and dark menu bars. Control-click also opens its settings menu.
 
+The icon starts near the right edge to remain visible on crowded menu bars with a camera notch. Command-drag it to your preferred position; macOS remembers that arrangement across launches.
+
 Shortcut recording requires Command, Option, or Control with a key. Escape cancels recording; Delete clears the binding. Unavailable combinations keep the previous setting. The shortcut registers only the selected combination and requires no keyboard monitoring or accessibility permission. Revo must be running for the global shortcut to work.
 
 Undo refuses to overwrite a file that already occupies the original location. Files can also be recovered through Finder's Trash. Revo has no permanent-delete or empty-Trash action.
