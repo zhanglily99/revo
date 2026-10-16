@@ -237,7 +237,7 @@ final class RevoView: NSView {
             spring(machine, key: "transform.translation.y", from: 3, to: 0)
         }
         updatePowerPresentation()
-        if state == .idle { messageVersion += 1; caption.opacity = 0 }
+        if state == .idle { hideMessage() }
     }
 
     private func updatePowerPresentation() {
@@ -285,6 +285,12 @@ final class RevoView: NSView {
             }
         }
     }
+    private func hideMessage() {
+        messageVersion += 1
+        currentMessage = nil
+        caption.string = nil
+        caption.opacity = 0
+    }
     private func setState(_ next: State) {
         state = next
         updatePowerPresentation()
@@ -312,7 +318,7 @@ final class RevoView: NSView {
         let operation = dragOperation(sender); guard !operation.isEmpty else { return [] }
         dragActive = true
         if state != .working { setState(.ready); spring(machine, key: "transform.translation.y", from: 0, to: 3) }
-        showMessage(.releaseToTrash, urls(sender).count, persistent: true)
+        hideMessage()
         return operation
     }
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation { dragOperation(sender) }
@@ -347,7 +353,7 @@ final class RevoView: NSView {
         guard state != .working, let job = queue.takeNext() else { return }
         setState(.working)
         spring(machine, key: "transform.translation.y", from: 3, to: 0)
-        showMessage(job.demo ? .demoFeed : .movingToTrash, persistent: true)
+        hideMessage()
         // Build the preview before recycling, while the original still exists.
         let sprite = PaperSprite.make(for: job.url, style: job.style)
         if job.demo { animate(job, image: sprite); return }
@@ -435,7 +441,7 @@ final class RevoView: NSView {
         play(.finish, volume: 0.12)
         setState(.idle)
         if !reducedMotion { spring(machine, key: "transform.translation.y", from: -1.2, to: 0) }
-        showMessage(job.demo ? .demoFinished : .recycleFinished)
+        hideMessage()
         if !queue.isEmpty { next() }
         else if dragActive && isPoweredOn { setState(.ready) }
     }

@@ -45,6 +45,8 @@ Open Revo from Applications, or open `build/Revo.app` when building locally. Rev
 
 Turn the switch on before dropping files. When off, Revo rejects drops and closes the inlet shutter. Power is never remembered across launches. Switching off during a batch discards all waiting jobs; the one file operation already in progress finishes. Turning it on again does not resume discarded jobs. Drag those files in again if you still want to recycle them.
 
+Normal drag, feeding, shredding, and completion use visual and sound feedback without a bottom caption. Demonstrations are also caption-free. Safety warnings and operation failures still provide feedback.
+
 | Gesture | Action |
 | --- | --- |
 | Turn the power switch on | Open the inlet and enable file drops, with a soft mechanical click |
