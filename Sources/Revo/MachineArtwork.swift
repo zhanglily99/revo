@@ -59,9 +59,12 @@ enum MachineArtwork {
     private static func shoulder(inset: CGFloat = 0) -> CGMutablePath {
         let path = CGMutablePath()
         let left = 23 + inset, right = 217 - inset
-        let frontY = 217 + (2 - sqrt(5)) * inset
+        let setback: CGFloat = 14
+        let slope: CGFloat = 38 / setback
+        let normal = (1 + slope * slope).squareRoot()
+        let frontY = 217 + (slope - normal) * inset
         let backY = 255 - inset
-        let backLeft = 42 + (sqrt(5) - 1) * inset / 2
+        let backLeft = 23 + setback + (normal - 1) / slope * inset
         let backRight = 240 - backLeft
         path.move(to: CGPoint(x: left, y: 200))
         path.addArc(tangent1End: CGPoint(x: left, y: frontY),
