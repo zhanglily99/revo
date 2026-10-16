@@ -47,6 +47,7 @@ enum L10n {
         case shortcutEnable = "Enable global shortcut"
         case shortcutRestore = "Restore Default"
         case done = "Done"
+        case menuBarHelp = "Click to show Revo. Right-click for settings."
         case showRevo = "Show Revo"
         case bodyHelp = "Turn on the power switch before dropping files. Revo starts off each time it opens. Right-click for undo and settings."
         case offHelp = "Revo is off. Turn on the switch to accept files."
@@ -97,6 +98,7 @@ enum L10n {
         .shortcutEnable: "启用全局快捷键",
         .shortcutRestore: "恢复默认",
         .done: "完成",
+        .menuBarHelp: "点击显示 Revo，右键打开设置。",
         .showRevo: "显示 Revo",
         .bodyHelp: "请先打开开关，再拖入文件。Revo 每次启动时默认关闭。右键可撤销操作或更改设置。",
         .offHelp: "Revo 已关闭，请打开开关后拖入文件。",
@@ -147,6 +149,7 @@ enum L10n {
         .shortcutEnable: "グローバルショートカットを有効にする",
         .shortcutRestore: "初期設定に戻す",
         .done: "完了",
+        .menuBarHelp: "クリックで Revo を表示、右クリックで設定を開きます。",
         .showRevo: "Revo を表示",
         .bodyHelp: "電源を入れてからファイルをドロップしてください。起動時は電源が切れています。右クリックで取り消しや設定ができます。",
         .offHelp: "Revo の電源は切れています。電源を入れるとファイルを受け付けます。",
@@ -197,6 +200,7 @@ enum L10n {
         .shortcutEnable: "전역 단축키 사용",
         .shortcutRestore: "기본값 복원",
         .done: "완료",
+        .menuBarHelp: "클릭하면 Revo가 표시되고, 오른쪽 클릭하면 설정이 열립니다.",
         .showRevo: "Revo 표시",
         .bodyHelp: "전원을 켠 후 파일을 놓으세요. Revo는 시작할 때 전원이 꺼져 있습니다. 오른쪽 클릭으로 실행을 취소하거나 설정을 변경할 수 있습니다.",
         .offHelp: "Revo가 꺼져 있습니다. 전원을 켜면 파일을 받습니다.",
@@ -247,6 +251,7 @@ enum L10n {
         .shortcutEnable: "Включить глобальное сочетание",
         .shortcutRestore: "По умолчанию",
         .done: "Готово",
+        .menuBarHelp: "Щелчок показывает Revo. Правый щелчок открывает настройки.",
         .showRevo: "Показать Revo",
         .bodyHelp: "Включите питание, прежде чем перетаскивать файлы. При запуске Revo питание выключено. Правый щелчок открывает отмену и настройки.",
         .offHelp: "Revo выключен. Включите питание, чтобы добавлять файлы.",
@@ -297,6 +302,7 @@ enum L10n {
         .shortcutEnable: "Activer le raccourci global",
         .shortcutRestore: "Par défaut",
         .done: "Terminé",
+        .menuBarHelp: "Cliquez pour afficher Revo. Clic droit pour les réglages.",
         .showRevo: "Afficher Revo",
         .bodyHelp: "Allumez Revo avant de déposer des fichiers. Revo démarre toujours éteint. Le clic droit donne accès aux réglages et à l’annulation.",
         .offHelp: "Revo est éteint. Allumez-le pour recevoir des fichiers.",

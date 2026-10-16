@@ -3,6 +3,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var panel: RevoPanel?
     private var statusItem: NSStatusItem?
+    private let statusMenu = NSMenu()
     private var globalShortcut: GlobalShortcut?
     private var shortcutSettings: ShortcutSettings?
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -19,9 +20,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         shortcut.onTrigger = { [weak self] in self?.togglePanel() }
         globalShortcut = shortcut
         let status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        status.button?.image = NSImage(systemSymbolName: "shredder", accessibilityDescription: "Revo") ?? NSImage(systemSymbolName: "trash", accessibilityDescription: "Revo")
-        status.button?.toolTip = "Revo"
-        let menu = NSMenu(); menu.delegate = self; status.menu = menu; statusItem = status
+        status.autosaveName = "RevoMenuBar"
+        status.behavior = []
+        status.isVisible = true
+        status.button?.image = MenuBarIcon.image()
+        status.button?.target = self
+        status.button?.action = #selector(menuBarClicked(_:))
+        status.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        status.button?.setAccessibilityLabel("Revo")
+        statusMenu.delegate = self
+        statusItem = status
+        NotificationCenter.default.addObserver(self, selector: #selector(updateMenuBarText), name: L10n.didChange, object: nil)
+        updateMenuBarText()
+    }
+    @objc private func updateMenuBarText() {
+        statusItem?.button?.toolTip = L10n.text(.menuBarHelp)
+        statusItem?.button?.setAccessibilityHelp(L10n.text(.menuBarHelp))
+    }
+    @objc private func menuBarClicked(_ sender: NSStatusBarButton) {
+        let event = NSApp.currentEvent
+        if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
+            statusMenu.update()
+            statusMenu.popUp(positioning: nil, at: CGPoint(x: 0, y: sender.bounds.minY - 4), in: sender)
+        } else {
+            showPanel()
+        }
     }
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
@@ -42,6 +65,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         shortcutSettings?.present()
     }
     @objc private func showPanel() { panel?.placeAtDefaultCorner(); panel?.orderFrontRegardless() }
-    func applicationWillTerminate(_ notification: Notification) { panel?.savePosition() }
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showPanel()
+        return true
+    }
+    func applicationWillTerminate(_ notification: Notification) {
+        panel?.savePosition()
+        NotificationCenter.default.removeObserver(self)
+    }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 }

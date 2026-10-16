@@ -41,8 +41,11 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 | Control + Option + R | Show or hide Revo from any app without changing its power state |
 | Right-click → Global Shortcut | Record your own combination, disable it, or restore the default; settings persist across launches |
 | Right-click → Language | Choose English, Simplified Chinese, Japanese, Korean, Russian, or French; menus, feedback, and accessibility text update immediately and the choice is remembered |
-| Menu bar → Show Revo | Bring back the hidden machine |
+| Click the Revo menu bar icon | Show the machine, including after hiding it |
+| Right-click the menu bar icon | Open the complete settings and actions menu |
 | Menu bar → Sound | Toggle mechanical sound effects, including switch clicks |
+
+Revo keeps a small monochrome icon in the macOS menu bar while running. Hiding the desktop machine keeps this icon available; clicking it shows Revo without changing its power state. The icon adapts to light and dark menu bars. Control-click also opens its settings menu.
 
 Shortcut recording requires Command, Option, or Control with a key. Escape cancels recording; Delete clears the binding. Unavailable combinations keep the previous setting. The shortcut registers only the selected combination and requires no keyboard monitoring or accessibility permission. Revo must be running for the global shortcut to work.
 
@@ -88,7 +91,8 @@ Preview mode renders off, on, roller-catch, feeding, and finished screenshots us
 
 | File | Responsibility |
 | --- | --- |
-| `AppDelegate.swift` | App lifecycle and menu bar |
+| `AppDelegate.swift` | App lifecycle, resident menu bar icon, and show/hide actions |
+| `MenuBarIcon.swift` | Monochrome template icon for light and dark menu bars |
 | `RevoPanel.swift` | Transparent floating panel and saved position |
 | `RevoView.swift` | Drag and drop, animation queue, menus, and feedback |
 | `MachineArtwork.swift` | Translucent enclosure, metal inlet, and shutter |
