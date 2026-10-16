@@ -23,6 +23,14 @@ Revo starts in English. Use the **Language** submenu in the right-click or menu 
 
 No dependencies, accounts, network calls, or analytics.
 
+## License
+
+Copyright (c) 2026 zhanglily99. Revo uses the custom [Revo Noncommercial Attribution License](LICENSE).
+
+Free personal use, learning, and noncommercial modification and sharing are permitted. Redistributions of original or modified versions must include the full license, retain the author credit and project source link, and identify modifications. Commercial use, including sales, paid redistribution, or incorporation into a commercial product or service, requires prior written permission from the copyright holder. Attribution alone does not permit commercial use.
+
+This is not the MIT License or an OSI-approved open source license. The license does not require publishing source code. For commercial permission, contact [zhanglily99](https://github.com/zhanglily99). The build script includes the full license at `Revo.app/Contents/Resources/LICENSE.txt`.
+
 ## Use Revo
 
 Open `build/Revo.app`. Revo appears near the bottom-right corner of your desktop, with its power switch **off**.

@@ -9,6 +9,7 @@ APP="build/Revo.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" build/Revo.iconset
 cp .build/release/Revo "$APP/Contents/MacOS/Revo"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+cp LICENSE "$APP/Contents/Resources/LICENSE.txt"
 .build/release/Revo --export-icon "$PWD/build/icon.png"
 for size in 16 32 128 256 512; do
   sips -z "$size" "$size" build/icon.png --out "build/Revo.iconset/icon_${size}x${size}.png" >/dev/null
