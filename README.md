@@ -39,7 +39,7 @@ This is not the MIT License or an OSI-approved open source license. The license 
 
 ## Use Revo
 
-Download the DMG from [Releases](https://github.com/zhanglily99/revo/releases), open it, and drag Revo to Applications. Builds require macOS 14 or later and support both Apple silicon and Intel. Release downloads inherit the repository's access permissions.
+Download the DMG from [Releases](https://github.com/zhanglily99/revo/releases), open it, and drag Revo to Applications. Builds require macOS 14 or later and support both Apple silicon and Intel. Source and release downloads are publicly available under the [Revo Noncommercial Attribution License](LICENSE).
 
 The current release has an ad-hoc signature and has not been notarized by Apple. macOS may block its first launch. Review [Apple's guidance for opening downloaded apps](https://support.apple.com/en-us/102445) and proceed only if you trust the source. Revo does not change system security settings.
 
