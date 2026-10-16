@@ -154,6 +154,11 @@ final class RevoView: NSView {
         kickPaper(impulse)
     }
 
+    /// The documentation renderer uses the same inertia as a desktop drag, without moving a window.
+    func previewMovement(to origin: CGPoint) {
+        machineMoved(to: origin)
+    }
+
     private func kickPaper(_ impulse: CGPoint) {
         guard !reducedMotion, !pile.isEmpty, hypot(impulse.x, impulse.y) > 0.3 else { return }
         for (index, fragment) in pile.enumerated() where fragment.animation(forKey: "cut") == nil {

@@ -13,6 +13,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let index = CommandLine.arguments.firstIndex(of: "--preview"), CommandLine.arguments.count > index + 1 {
             Preview.export(panel: panel, directory: CommandLine.arguments[index + 1]); return
         }
+        if let index = CommandLine.arguments.firstIndex(of: "--record-demo"), CommandLine.arguments.count > index + 1 {
+            Preview.record(panel: panel, directory: CommandLine.arguments[index + 1]); return
+        }
         let shortcut = GlobalShortcut()
         shortcut.onTrigger = { [weak self] in self?.togglePanel() }
         globalShortcut = shortcut

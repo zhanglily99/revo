@@ -4,13 +4,15 @@
   <img src="Resources/AppIcon.png" alt="Revo's silver and liquid-glass paper shredder icon" width="128">
 </p>
 
-A tiny native macOS desktop companion that turns letting go of files into a small, tactile ritual. Turn Revo on, drop a file into the slot, and watch it become paper scraps. The real file moves to macOS Trash and remains recoverable.
+A tiny native macOS paper shredder with a silver head, clear glass body, and tactile controls. Switch it on, drop a file into the slot, and watch the rollers draw it in. Your file moves to macOS Trash and remains recoverable.
 
 <p align="center">
-  <img src="docs/images/idle.png" alt="Revo powered off with its inlet shutter closed" width="220">
-  <img src="docs/images/gripping.png" alt="A photo caught by the rollers at the inlet" width="220">
-  <img src="docs/images/feeding.png" alt="Revo slowly feeding a photo into its clear glass body" width="220">
+  <img src="docs/images/demo.gif" alt="Revo switches on, draws a photo through its rollers, cuts it into paper scraps, moves and shakes with loose paper swaying inside, then switches off" width="560">
 </p>
+
+**Switch on → feed a file → shred → move and shake → switch off.**
+
+This preview uses demonstration sheets. The GIF is silent; Revo includes switch clicks, motor sounds, and paper rustling.
 
 ## The little machine
 
@@ -121,6 +123,8 @@ The self-test checks shortcut conflicts, preserved bindings, recording suspensio
 
 Preview mode renders off, on, roller-catch, feeding, and finished screenshots using demo sheets. It does not recycle any files.
 
+To regenerate the looping README demonstration, run `./scripts/render-demo.sh` with Python 3 and Pillow installed. The capture uses the app's actual view, feed animations, and movement physics at 20 frames per second. Its frame files remain in `build/demo-frames.*` for review; the optimized GIF is written to `docs/images/demo.gif`.
+
 ## Inside the app
 
 | File | Responsibility |
@@ -145,4 +149,4 @@ Preview mode renders off, on, roller-catch, feeding, and finished screenshots us
 | `SoundPlayer.swift` | Background audio preparation and playback |
 | `Stats.swift` | Local daily count |
 | `SelfTest.swift` | Disposable file-operation checks |
-| `Preview.swift` | Screenshot export |
+| `Preview.swift` | Screenshot and animated documentation captures |
