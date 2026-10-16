@@ -1,7 +1,37 @@
 import AppKit
+import Carbon
 
 enum SelfTest {
+    private static func checkShortcuts() {
+        let firstName = "Revo-shortcut-check-" + UUID().uuidString
+        let secondName = "Revo-shortcut-check-" + UUID().uuidString
+        let firstDefaults = UserDefaults(suiteName: firstName)!
+        let secondDefaults = UserDefaults(suiteName: secondName)!
+        defer {
+            firstDefaults.removePersistentDomain(forName: firstName)
+            secondDefaults.removePersistentDomain(forName: secondName)
+        }
+        let first = GlobalShortcut(defaults: firstDefaults)
+        let candidate = KeyboardShortcut(keyCode: UInt32(kVK_F19), modifiers: UInt32(controlKey | optionKey | shiftKey))
+        precondition(first.configure(candidate, enabled: true))
+        let second = GlobalShortcut(defaults: secondDefaults)
+        let old = second.shortcut, registered = second.isRegistered
+        precondition(!second.configure(candidate, enabled: true), "A conflicting shortcut was accepted")
+        precondition(second.shortcut == old && second.isRegistered == registered, "Conflict replaced the previous binding")
+        first.suspend(); precondition(!first.isRegistered)
+        precondition(first.resume() && first.isRegistered)
+        precondition(first.configure(candidate, enabled: false) && !first.isRegistered)
+        let restored = GlobalShortcut(defaults: firstDefaults)
+        precondition(restored.shortcut == candidate && !restored.isEnabled && !restored.isRegistered)
+        precondition(first.configure(nil, enabled: false))
+        let cleared = GlobalShortcut(defaults: firstDefaults)
+        precondition(cleared.shortcut == nil && !cleared.isEnabled)
+        precondition(!KeyboardShortcut(keyCode: 15, modifiers: UInt32(shiftKey)).isValid)
+        print("PASS: global shortcut conflicts, preserved binding, suspension, persistence, and clearing")
+    }
+
     static func run() {
+        checkShortcuts()
         // Compare gentle movement with a sharp shake, then verify bounded settling.
         func excursion(_ force: CGFloat) -> (height: CGFloat, travel: CGFloat, spin: CGFloat) {
             var paper = PaperMotion(variation: 1)

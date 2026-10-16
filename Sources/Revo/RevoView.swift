@@ -474,10 +474,12 @@ final class RevoView: NSView {
             languages.addItem(option)
         }
         language.submenu = languages; menu.addItem(language)
+        _ = item(L10n.text(.shortcutMenu), #selector(configureShortcut))
         _ = item(L10n.text(.hide), #selector(hidePanel))
         _ = item(L10n.text(.quit), #selector(quit))
         return menu
     }
+    @objc private func configureShortcut() { (NSApp.delegate as? AppDelegate)?.showShortcutSettings() }
     @objc private func changeLanguage(_ sender: NSMenuItem) {
         guard AppLanguage.allCases.indices.contains(sender.tag) else { return }
         L10n.language = AppLanguage.allCases[sender.tag]

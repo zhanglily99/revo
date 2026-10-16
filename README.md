@@ -38,9 +38,13 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 | Right-click → Try It, while on | Preview each animation without moving files |
 | Right-click → Undo Last File | Restore the most recently recycled file during this session |
 | Right-click → Clear Paper Scraps | Clear the visual scraps inside the machine |
+| Control + Option + R | Show or hide Revo from any app without changing its power state |
+| Right-click → Global Shortcut… | Record your own combination, disable it, or restore the default; settings persist across launches |
 | Right-click → Language | Choose English or Simplified Chinese; menus, feedback, and accessibility text update immediately and the choice is remembered |
 | Menu bar → Show Revo | Bring back the hidden machine |
 | Menu bar → Sound | Toggle mechanical sound effects, including switch clicks |
+
+Shortcut recording requires Command, Option, or Control with a key. Escape cancels recording; Delete clears the binding. Unavailable combinations keep the previous setting. The shortcut registers only the selected combination and requires no keyboard monitoring or accessibility permission. Revo must be running for the global shortcut to work.
 
 Undo refuses to overwrite a file that already occupies the original location. Files can also be recovered through Finder's Trash. Revo has no permanent-delete or empty-Trash action.
 
@@ -76,7 +80,7 @@ swift build -c release --product Revo
 .build/release/Revo --preview "$PWD/build/preview"
 ```
 
-The self-test compares gentle and strong shakes, verifies fragment bounds and eventual settling, then creates disposable temporary fixtures and checks the default-off interlock, rejected file drops, cancellation of waiting jobs, file classification, recycling, restoration, same-name conflict protection, and failure for a missing source file. It never uses existing user files.
+The self-test checks shortcut conflicts, preserved bindings, recording suspension, persistence, and clearing; compares gentle and strong shakes, verifies fragment bounds and eventual settling, then creates disposable temporary fixtures and checks the default-off interlock, rejected file drops, cancellation of waiting jobs, file classification, recycling, restoration, same-name conflict protection, and failure for a missing source file. It never uses existing user files.
 
 Preview mode renders off, on, roller-catch, feeding, and finished screenshots using demo sheets. It does not recycle any files.
 
@@ -91,6 +95,8 @@ Preview mode renders off, on, roller-catch, feeding, and finished screenshots us
 | `GlassBackdrop.swift` | Native diffusion inside the lower glass and accessibility fallback |
 | `PaperFeed.swift` | Roller catch, curved paper surface, and slow feed timing |
 | `PaperMotion.swift` | Bounded fragment inertia, bounce, and damping |
+| `GlobalShortcut.swift` | Persistent global shortcut registration and conflict handling |
+| `ShortcutSettings.swift` | Native shortcut recorder, enable switch, and reset |
 | `Localization.swift` | English and Simplified Chinese copy with a persistent in-app language choice |
 | `PowerSwitch.swift` | Tactile switch artwork, native button tracking, and accessible power control |
 | `PowerQueue.swift` | Default-off interlock and waiting-job cancellation |

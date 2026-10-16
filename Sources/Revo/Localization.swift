@@ -27,6 +27,19 @@ enum L10n {
     }
 
     enum Key: String, CaseIterable {
+        case shortcutMenu = "Global Shortcut…"
+        case shortcutTitle = "Global Shortcut"
+        case shortcutDescription = "Show or hide Revo from any app. Power stays as you left it."
+        case shortcutRecord = "Record a global shortcut"
+        case shortcutRecording = "Press shortcut…"
+        case shortcutNotSet = "Not Set"
+        case shortcutHint = "Click the shortcut above to change it."
+        case shortcutRecordingHelp = "Use ⌘, ⌥, or ⌃ with a key. Esc cancels; Delete clears."
+        case shortcutInvalid = "Include Command, Option, or Control with your key."
+        case shortcutConflict = "This shortcut is unavailable. Your previous setting is kept."
+        case shortcutEnable = "Enable global shortcut"
+        case shortcutRestore = "Restore Default"
+        case done = "Done"
         case showRevo = "Show Revo"
         case bodyHelp = "Turn on the power switch before dropping files. Revo starts off each time it opens. Right-click for undo and settings."
         case offHelp = "Revo is off. Turn on the switch to accept files."
@@ -65,6 +78,19 @@ enum L10n {
     }
 
     private static let simplifiedChinese: [Key: String] = [
+        .shortcutMenu: "全局快捷键…",
+        .shortcutTitle: "全局快捷键",
+        .shortcutDescription: "在任何应用中显示或隐藏 Revo，电源状态保持不变。",
+        .shortcutRecord: "录入全局快捷键",
+        .shortcutRecording: "请按下快捷键…",
+        .shortcutNotSet: "未设置",
+        .shortcutHint: "点击上方的快捷键，即可更改。",
+        .shortcutRecordingHelp: "使用 ⌘、⌥ 或 ⌃ 加一个按键。Esc 取消，Delete 清除。",
+        .shortcutInvalid: "请同时按下 Command、Option 或 Control。",
+        .shortcutConflict: "此快捷键不可用，已保留原来的设置。",
+        .shortcutEnable: "启用全局快捷键",
+        .shortcutRestore: "恢复默认",
+        .done: "完成",
         .showRevo: "显示 Revo",
         .bodyHelp: "请先打开开关，再拖入文件。Revo 每次启动时默认关闭。右键可撤销操作或更改设置。",
         .offHelp: "Revo 已关闭，请打开开关后拖入文件。",

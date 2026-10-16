@@ -3,6 +3,8 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var panel: RevoPanel?
     private var statusItem: NSStatusItem?
+    private var globalShortcut: GlobalShortcut?
+    private var shortcutSettings: ShortcutSettings?
     func applicationDidFinishLaunching(_ notification: Notification) {
         if let index = CommandLine.arguments.firstIndex(of: "--export-icon"), CommandLine.arguments.count > index + 1 {
             Preview.exportIcon(path: CommandLine.arguments[index + 1]); NSApp.terminate(nil); return
@@ -13,6 +15,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let index = CommandLine.arguments.firstIndex(of: "--preview"), CommandLine.arguments.count > index + 1 {
             Preview.export(panel: panel, directory: CommandLine.arguments[index + 1]); return
         }
+        let shortcut = GlobalShortcut()
+        shortcut.onTrigger = { [weak self] in self?.togglePanel() }
+        globalShortcut = shortcut
         let status = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         status.button?.image = NSImage(systemSymbolName: "shredder", accessibilityDescription: "Revo") ?? NSImage(systemSymbolName: "trash", accessibilityDescription: "Revo")
         status.button?.toolTip = "Revo"
@@ -25,6 +30,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let items = view.makeMenu().items
             for item in items { item.menu?.removeItem(item); menu.addItem(item) }
         }
+    }
+    private func togglePanel() {
+        guard let panel else { return }
+        if panel.isVisible { panel.orderOut(nil) } else { showPanel() }
+    }
+    @objc func showShortcutSettings() {
+        guard let globalShortcut else { return }
+        if shortcutSettings == nil { shortcutSettings = ShortcutSettings(shortcut: globalShortcut) }
+        shortcutSettings?.present()
     }
     @objc private func showPanel() { panel?.placeAtDefaultCorner(); panel?.orderFrontRegardless() }
     func applicationWillTerminate(_ notification: Notification) { panel?.savePosition() }
