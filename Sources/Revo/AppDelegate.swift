@@ -20,7 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        let show = NSMenuItem(title: "Show Revo", action: #selector(showPanel), keyEquivalent: ""); show.target = self; menu.addItem(show)
+        let show = NSMenuItem(title: L10n.text(.showRevo), action: #selector(showPanel), keyEquivalent: ""); show.target = self; menu.addItem(show)
         if let view = panel?.contentView as? RevoView {
             let items = view.makeMenu().items
             for item in items { item.menu?.removeItem(item); menu.addItem(item) }

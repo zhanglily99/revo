@@ -37,6 +37,7 @@ final class RevoView: NSView {
     private var hovered = false
     private var dragActive = false
     private var messageVersion = 0
+    private var currentMessage: (key: L10n.Key, arguments: [CVarArg])?
     private var mute: Bool {
         get { UserDefaults.standard.bool(forKey: "muted") }
         set { UserDefaults.standard.set(newValue, forKey: "muted") }
@@ -54,8 +55,8 @@ final class RevoView: NSView {
         setAccessibilityElement(false)
         setAccessibilityRole(.group)
         setAccessibilityLabel("Revo")
-        setAccessibilityHelp("Turn on the power switch before dropping files. Revo starts off each time it opens. Right-click for undo and settings.")
-        toolTip = "Revo is off. Turn on the switch to accept files."
+        NotificationCenter.default.addObserver(self, selector: #selector(updateLocalizedText), name: L10n.didChange, object: nil)
+        updateLocalizedText()
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(updateTransparency), name: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil)
         updateTransparency()
     }
@@ -84,9 +85,6 @@ final class RevoView: NSView {
         machine.addSublayer(counter)
         powerSwitch.target = self; powerSwitch.action = #selector(togglePower)
         powerSwitch.appearance = NSAppearance(named: .aqua)
-        powerSwitch.setAccessibilityLabel("Revo power")
-        powerSwitch.setAccessibilityHelp("Off rejects file drops. On allows files to move to Trash.")
-        powerSwitch.toolTip = "Turn on to accept files"
         addSubview(powerSwitch)
         updatePowerPresentation()
         caption.frame = CGRect(x: 8, y: 20, width: 224, height: 19)
@@ -139,6 +137,7 @@ final class RevoView: NSView {
     deinit {
         motionTimer?.invalidate()
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func machineMoved(to origin: CGPoint) {
@@ -244,7 +243,7 @@ final class RevoView: NSView {
     private func updatePowerPresentation() {
         powerSwitch.setPower(isPoweredOn, animated: !reducedMotion)
         updateCounter()
-        toolTip = isPoweredOn ? "Drop a file to move it to Trash. Right-click to undo." : "Revo is off. Turn on the switch to accept files."
+        toolTip = L10n.text(isPoweredOn ? .onHelp : .offHelp)
         CATransaction.begin(); CATransaction.setAnimationDuration(reducedMotion ? 0 : 0.22)
         shutter.opacity = isPoweredOn ? 0 : 1
         shutter.transform = CATransform3DMakeScale(1, isPoweredOn ? 0.08 : 1, 1)
@@ -256,8 +255,8 @@ final class RevoView: NSView {
         CATransaction.begin(); CATransaction.setDisableActions(true)
         counter.contents = MachineArtwork.counter(count: Stats.todayCount, powered: isPoweredOn)
         CATransaction.commit()
-        powerSwitch.toolTip = "Revo power · Files recycled today: \(Stats.todayCount)"
-        powerSwitch.setAccessibilityHelp("Off rejects file drops. On allows files to move to Trash. Files recycled today: \(Stats.todayCount).")
+        powerSwitch.toolTip = L10n.text(.powerCount, Stats.todayCount)
+        powerSwitch.setAccessibilityHelp(L10n.text(.powerHelp, Stats.todayCount))
     }
 
     private func spring(_ target: CALayer, key: String, from: CGFloat, to: CGFloat) {
@@ -267,9 +266,18 @@ final class RevoView: NSView {
         animation.mass = 0.7; animation.stiffness = 260; animation.damping = 22; animation.duration = animation.settlingDuration
         target.add(animation, forKey: key)
     }
-    private func showMessage(_ text: String, persistent: Bool = false) {
+    @objc private func updateLocalizedText() {
+        setAccessibilityHelp(L10n.text(.bodyHelp))
+        powerSwitch.setAccessibilityLabel(L10n.text(.power))
+        toolTip = L10n.text(isPoweredOn ? .onHelp : .offHelp)
+        updateCounter()
+        if let currentMessage { caption.string = L10n.text(currentMessage.key, arguments: currentMessage.arguments) }
+    }
+
+    private func showMessage(_ key: L10n.Key, _ arguments: CVarArg..., persistent: Bool = false) {
         messageVersion += 1; let version = messageVersion
-        caption.string = text; caption.opacity = 1
+        currentMessage = (key, arguments)
+        caption.string = L10n.text(key, arguments: arguments); caption.opacity = 1
         if !persistent {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
                 guard let self, self.messageVersion == version, self.state == .idle else { return }
@@ -298,13 +306,13 @@ final class RevoView: NSView {
     }
     override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
         guard isPoweredOn else {
-            showMessage("Turn on before dropping files.")
+            showMessage(.turnOnBeforeDrop)
             return []
         }
         let operation = dragOperation(sender); guard !operation.isEmpty else { return [] }
         dragActive = true
         if state != .working { setState(.ready); spring(machine, key: "transform.translation.y", from: 0, to: 3) }
-        showMessage("Release to move to Trash · \(urls(sender).count) items", persistent: true)
+        showMessage(.releaseToTrash, urls(sender).count, persistent: true)
         return operation
     }
     override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation { dragOperation(sender) }
@@ -339,7 +347,7 @@ final class RevoView: NSView {
         guard state != .working, let job = queue.takeNext() else { return }
         setState(.working)
         spring(machine, key: "transform.translation.y", from: 3, to: 0)
-        showMessage(job.demo ? "Try a sheet. Let it go." : "Moving to Trash…", persistent: true)
+        showMessage(job.demo ? .demoFeed : .movingToTrash, persistent: true)
         // Build the preview before recycling, while the original still exists.
         let sprite = PaperSprite.make(for: job.url, style: job.style)
         if job.demo { animate(job, image: sprite); return }
@@ -350,7 +358,7 @@ final class RevoView: NSView {
                 Stats.increment(); self.updateCounter(); self.animate(job, image: sprite)
             case .failure(let error):
                 self.setState(.idle)
-                self.showMessage("Could not move to Trash")
+                self.showMessage(.recycleFailed)
                 self.toolTip = error.localizedDescription
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.next() }
             }
@@ -427,7 +435,7 @@ final class RevoView: NSView {
         play(.finish, volume: 0.12)
         setState(.idle)
         if !reducedMotion { spring(machine, key: "transform.translation.y", from: -1.2, to: 0) }
-        showMessage(job.demo ? "Demo only. No files moved." : "Moved to Trash · Right-click to undo")
+        showMessage(job.demo ? .demoFinished : .recycleFinished)
         if !queue.isEmpty { next() }
         else if dragActive && isPoweredOn { setState(.ready) }
     }
@@ -442,24 +450,37 @@ final class RevoView: NSView {
         func item(_ title: String, _ action: Selector, enabled: Bool = true) -> NSMenuItem {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: ""); item.target = self; item.isEnabled = enabled; menu.addItem(item); return item
         }
-        let power = item(isPoweredOn ? "Turn Off" : "Turn On", #selector(togglePower))
+        let power = item(L10n.text(isPoweredOn ? .turnOff : .turnOn), #selector(togglePower))
         power.state = isPoweredOn ? .on : .off
         menu.addItem(.separator())
-        let count = NSMenuItem(title: "Recycled today: \(Stats.todayCount)", action: nil, keyEquivalent: ""); count.isEnabled = false; menu.addItem(count)
+        let count = NSMenuItem(title: L10n.text(.recycledToday, Stats.todayCount), action: nil, keyEquivalent: ""); count.isEnabled = false; menu.addItem(count)
         menu.addItem(.separator())
-        _ = item("Undo Last File", #selector(undo), enabled: trash.canUndo && state != .working)
-        _ = item("Open Trash", #selector(openTrash))
-        let demos = NSMenuItem(title: "Try It", action: nil, keyEquivalent: ""); let submenu = NSMenu()
-        for (index, title) in ["Document · Paper Strips", "Photo · Confetti", "Audio · Waveform", "Video · Film Strips", "Folder · Stacked Sheets"].enumerated() {
-            let option = NSMenuItem(title: title, action: #selector(demoMenu(_:)), keyEquivalent: ""); option.tag = index; option.target = self; submenu.addItem(option)
+        _ = item(L10n.text(.undo), #selector(undo), enabled: trash.canUndo && state != .working)
+        _ = item(L10n.text(.openTrash), #selector(openTrash))
+        let demos = NSMenuItem(title: L10n.text(.tryIt), action: nil, keyEquivalent: ""); let submenu = NSMenu()
+        for (index, key) in [L10n.Key.demoDocument, .demoPhoto, .demoAudio, .demoVideo, .demoFolder].enumerated() {
+            let option = NSMenuItem(title: L10n.text(key), action: #selector(demoMenu(_:)), keyEquivalent: ""); option.tag = index; option.target = self; submenu.addItem(option)
         }
         demos.submenu = submenu; demos.isEnabled = isPoweredOn && state != .working; menu.addItem(demos)
-        _ = item("Clear Paper Scraps", #selector(clearScraps), enabled: state != .working)
+        _ = item(L10n.text(.clearScraps), #selector(clearScraps), enabled: state != .working)
         menu.addItem(.separator())
-        let sound = item("Sound", #selector(toggleSound)); sound.state = mute ? .off : .on
-        _ = item("Hide Revo", #selector(hidePanel))
-        _ = item("Quit Revo", #selector(quit))
+        let sound = item(L10n.text(.sound), #selector(toggleSound)); sound.state = mute ? .off : .on
+        let language = NSMenuItem(title: L10n.text(.language), action: nil, keyEquivalent: "")
+        let languages = NSMenu()
+        for (index, choice) in AppLanguage.allCases.enumerated() {
+            let option = NSMenuItem(title: choice.displayName, action: #selector(changeLanguage(_:)), keyEquivalent: "")
+            option.target = self; option.tag = index
+            option.state = L10n.language == choice ? .on : .off
+            languages.addItem(option)
+        }
+        language.submenu = languages; menu.addItem(language)
+        _ = item(L10n.text(.hide), #selector(hidePanel))
+        _ = item(L10n.text(.quit), #selector(quit))
         return menu
+    }
+    @objc private func changeLanguage(_ sender: NSMenuItem) {
+        guard AppLanguage.allCases.indices.contains(sender.tag) else { return }
+        L10n.language = AppLanguage.allCases[sender.tag]
     }
     @objc private func demoMenu(_ sender: NSMenuItem) { demo([.document, .photo, .audio, .video, .folder][sender.tag]) }
     @objc private func toggleSound() { mute.toggle(); if mute { soundPlayer.stopAll() } }
@@ -468,16 +489,16 @@ final class RevoView: NSView {
         CATransaction.begin(); CATransaction.setAnimationDuration(reducedMotion ? 0 : 0.3)
         CATransaction.setCompletionBlock { old.forEach { $0.removeFromSuperlayer() } }
         old.forEach { $0.opacity = 0; $0.position.y -= 12 }; CATransaction.commit()
-        showMessage("Paper scraps cleared.")
+        showMessage(.scrapsCleared)
     }
     @objc private func undo() {
         guard state != .working, trash.canUndo else { return }
-        setState(.working); showMessage("Restoring the last file…", persistent: true)
+        setState(.working); showMessage(.restoring, persistent: true)
         trash.undo { [weak self] result in
             guard let self else { return }; self.setState(.idle)
             switch result {
-            case .success: Stats.decrement(); self.updateCounter(); self.showMessage("Restored to its original location.")
-            case .failure(let error): self.showMessage("Could not restore · Open Trash"); self.toolTip = error.localizedDescription
+            case .success: Stats.decrement(); self.updateCounter(); self.showMessage(.restored)
+            case .failure(let error): self.showMessage(.restoreFailed); self.toolTip = error.localizedDescription
             }
             self.next()
         }

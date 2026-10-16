@@ -12,7 +12,7 @@ final class TrashService {
             DispatchQueue.main.async {
                 if let error { completion(.failure(error)); return }
                 guard let destination = mapping[url] else {
-                    completion(.failure(NSError(domain: "Revo", code: 1, userInfo: [NSLocalizedDescriptionKey: "macOS did not return the location of the recycled file."])))
+                    completion(.failure(NSError(domain: "Revo", code: 1, userInfo: [NSLocalizedDescriptionKey: L10n.text(.missingTrashLocation)])))
                     return
                 }
                 let receipt = Receipt(original: url, trashed: destination)
