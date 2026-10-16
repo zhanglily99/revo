@@ -474,11 +474,25 @@ final class RevoView: NSView {
             languages.addItem(option)
         }
         language.submenu = languages; menu.addItem(language)
-        _ = item(L10n.text(.shortcutMenu), #selector(configureShortcut))
+        _ = item(L10n.text(.shortcutTitle), #selector(configureShortcut))
         _ = item(L10n.text(.hide), #selector(hidePanel))
         _ = item(L10n.text(.quit), #selector(quit))
+        Self.fitMenu(menu)
         return menu
     }
+
+    /// Leave room for the full localized title, checkmarks, and submenu arrows.
+    static func fitMenu(_ menu: NSMenu) {
+        let font = NSFont.menuFont(ofSize: 0)
+        let longest = menu.items.filter { !$0.isSeparatorItem }.map {
+            ($0.title as NSString).size(withAttributes: [.font: font]).width
+        }.max() ?? 0
+        menu.minimumWidth = ceil(longest + 64)
+        for item in menu.items {
+            if let submenu = item.submenu { fitMenu(submenu) }
+        }
+    }
+
     @objc private func configureShortcut() { (NSApp.delegate as? AppDelegate)?.showShortcutSettings() }
     @objc private func changeLanguage(_ sender: NSMenuItem) {
         guard AppLanguage.allCases.indices.contains(sender.tag) else { return }

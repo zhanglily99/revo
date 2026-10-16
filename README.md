@@ -19,7 +19,7 @@ A solid silver head, clear glass enclosure, layered edge reflections, and a comp
 - Folders feed a stack of sheets.
 - Files larger than 200 MB feed more slowly.
 
-Revo starts in English. Choose **Language → 简体中文** from the right-click or menu bar menu to use Simplified Chinese. The selected language persists across launches.
+Revo starts in English. Use the **Language** submenu in the right-click or menu bar menu to choose English, Simplified Chinese, Japanese, Korean, Russian, or French. Each language appears under its native name. Menus reserve enough width for full localized titles, and settings entries have no trailing ellipsis. The selected language persists across launches.
 
 No dependencies, accounts, network calls, or analytics.
 
@@ -39,8 +39,8 @@ Turn the switch on before dropping files. When off, Revo rejects drops and close
 | Right-click → Undo Last File | Restore the most recently recycled file during this session |
 | Right-click → Clear Paper Scraps | Clear the visual scraps inside the machine |
 | Control + Option + R | Show or hide Revo from any app without changing its power state |
-| Right-click → Global Shortcut… | Record your own combination, disable it, or restore the default; settings persist across launches |
-| Right-click → Language | Choose English or Simplified Chinese; menus, feedback, and accessibility text update immediately and the choice is remembered |
+| Right-click → Global Shortcut | Record your own combination, disable it, or restore the default; settings persist across launches |
+| Right-click → Language | Choose English, Simplified Chinese, Japanese, Korean, Russian, or French; menus, feedback, and accessibility text update immediately and the choice is remembered |
 | Menu bar → Show Revo | Bring back the hidden machine |
 | Menu bar → Sound | Toggle mechanical sound effects, including switch clicks |
 
@@ -97,7 +97,7 @@ Preview mode renders off, on, roller-catch, feeding, and finished screenshots us
 | `PaperMotion.swift` | Bounded fragment inertia, bounce, and damping |
 | `GlobalShortcut.swift` | Persistent global shortcut registration and conflict handling |
 | `ShortcutSettings.swift` | Native shortcut recorder, enable switch, and reset |
-| `Localization.swift` | English and Simplified Chinese copy with a persistent in-app language choice |
+| `Localization.swift` | Six-language copy with a persistent in-app language choice |
 | `PowerSwitch.swift` | Tactile switch artwork, native button tracking, and accessible power control |
 | `PowerQueue.swift` | Default-off interlock and waiting-job cancellation |
 | `PaperSprite.swift` | File-specific paper previews and bounded photo thumbnails |

@@ -15,15 +15,19 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.3.16</string>
+	<string>0.3.17</string>
 	<key>CFBundleVersion</key>
-	<string>20</string>
+	<string>21</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>
 		<string>zh-Hans</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>ru</string>
+		<string>fr</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>

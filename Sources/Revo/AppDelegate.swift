@@ -30,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             let items = view.makeMenu().items
             for item in items { item.menu?.removeItem(item); menu.addItem(item) }
         }
+        RevoView.fitMenu(menu)
     }
     private func togglePanel() {
         guard let panel else { return }
