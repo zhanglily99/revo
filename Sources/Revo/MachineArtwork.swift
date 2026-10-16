@@ -301,15 +301,20 @@ enum MachineArtwork {
         line(CGPoint(x: 29, y: 58), CGPoint(x: 29, y: 168), color: 0x9BB0C2, alpha: 0.25, width: 0.65)
         line(CGPoint(x: 211, y: 58), CGPoint(x: 211, y: 168), color: 0x8FA5B9, alpha: 0.28, width: 0.65)
 
-        // Broad, low-contrast reflections merge into the clear center.
-        let reflection = NSBezierPath()
-        reflection.move(to: CGPoint(x: 24, y: 168))
-        reflection.curve(to: CGPoint(x: 79, y: 168), controlPoint1: CGPoint(x: 43, y: 161), controlPoint2: CGPoint(x: 55, y: 162))
-        reflection.curve(to: CGPoint(x: 153, y: 54), controlPoint1: CGPoint(x: 93, y: 103), controlPoint2: CGPoint(x: 128, y: 69))
-        reflection.line(to: CGPoint(x: 119, y: 54))
-        reflection.curve(to: CGPoint(x: 24, y: 153), controlPoint1: CGPoint(x: 93, y: 81), controlPoint2: CGPoint(x: 44, y: 128))
-        reflection.close()
-        gradient(reflection, [(0xFFFFFF, 0.20), (0xFFFFFF, 0.015)], -48)
+        // A soft reflection follows the upright pane without a diagonal cut or visible boundary.
+        let context = NSGraphicsContext.current!.cgContext
+        context.saveGState()
+        context.translateBy(x: 36, y: 128)
+        context.scaleBy(x: 47, y: 102)
+        let reflection = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                    colors: [color(0xFFFFFF, 0.075).cgColor,
+                                             color(0xFFFFFF, 0.045).cgColor,
+                                             color(0xFFFFFF, 0.010).cgColor,
+                                             color(0xFFFFFF, 0).cgColor] as CFArray,
+                                    locations: [0, 0.35, 0.75, 1])!
+        context.drawRadialGradient(reflection, startCenter: .zero, startRadius: 0,
+                                   endCenter: .zero, endRadius: 1, options: [])
+        context.restoreGState()
         gradient(rounded(NSRect(x: 28, y: 65, width: 7, height: 110), 3.5), [(0xFFFFFF, 0.04), (0xFFFFFF, 0.58), (0xB8D1E6, 0.10), (0xFFFFFF, 0.02)], 0)
         gradient(rounded(NSRect(x: 205, y: 65, width: 7, height: 110), 3.5), [(0xFFFFFF, 0.015), (0x98AFC3, 0.20), (0xFFFFFF, 0.70), (0xFFFFFF, 0.03)], 0)
         gradient(rounded(NSRect(x: 30, y: 51, width: 180, height: 6), 2), [(0xFFFFFF, 0.06), (0xC4D8E9, 0.25), (0xFFFFFF, 0.77), (0xFFFFFF, 0.02)])
