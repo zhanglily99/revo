@@ -42,7 +42,7 @@ enum Preview {
                                        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { exit(1) }
             NSGraphicsContext.saveGraphicsState()
             NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
-            NSGradient(starting: MachineArtwork.color(0xEEF1F4), ending: MachineArtwork.color(0xDFE8E8))!
+            NSGradient(starting: MachineArtwork.color(0xEEF1F4), ending: MachineArtwork.color(0xDCE7F1))!
                 .draw(in: CGRect(x: 0, y: 0, width: width, height: height), angle: 18)
             ctx.saveGState()
             ctx.translateBy(x: 130, y: 40)
@@ -67,7 +67,7 @@ enum Preview {
             }
             if let cursor {
                 if pressed {
-                    MachineArtwork.color(0x78A594, 0.20).setFill()
+                    MachineArtwork.color(0x7FAACB, 0.20).setFill()
                     NSBezierPath(ovalIn: CGRect(x: cursor.x - 10, y: cursor.y - 10, width: 20, height: 20)).fill()
                 }
                 let arrow = NSBezierPath()

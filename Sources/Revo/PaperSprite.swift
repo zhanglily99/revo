@@ -46,17 +46,17 @@ enum PaperSprite {
                ] as CFDictionary) {
                 NSImage(cgImage: thumbnail, size: rect.size).draw(in: rect)
             } else {
-                NSColor(calibratedRed: 0.68, green: 0.76, blue: 0.61, alpha: 1).setFill()
+                NSColor(calibratedRed: 0.61, green: 0.76, blue: 0.88, alpha: 1).setFill()
                 rect.fill()
                 NSColor(calibratedRed: 0.96, green: 0.86, blue: 0.60, alpha: 1).setFill()
                 NSBezierPath(ovalIn: NSRect(x: S(24), y: S(29), width: S(7), height: S(7))).fill()
                 let hill = NSBezierPath(); hill.move(to: NSPoint(x: S(4), y: S(9)))
                 hill.line(to: NSPoint(x: S(13), y: S(29))); hill.line(to: NSPoint(x: S(25), y: S(9))); hill.close()
-                NSColor(calibratedRed: 0.36, green: 0.48, blue: 0.38, alpha: 1).setFill(); hill.fill()
+                NSColor(calibratedRed: 0.29, green: 0.46, blue: 0.64, alpha: 1).setFill(); hill.fill()
             }
         case .audio:
             // Centered waveform and a title line.
-            NSColor(calibratedRed: 0.45, green: 0.62, blue: 0.40, alpha: 0.85).setFill()
+            NSColor(calibratedRed: 0.40, green: 0.61, blue: 0.78, alpha: 0.85).setFill()
             let heights: [CGFloat] = [5, 9, 14, 10, 16, 12, 7, 12, 15, 9, 6, 10]
             for (i, h) in heights.enumerated() {
                 let x = S(6) + CGFloat(i) * S(2.4)

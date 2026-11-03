@@ -231,7 +231,7 @@ enum MachineArtwork {
         context.endTransparencyLayer()
         context.restoreGState()
         line(CGPoint(x: 23.5, y: 169.5), CGPoint(x: 216.5, y: 169.5), color: 0x6F8192, alpha: 0.38, width: 0.7)
-        text("Revo", NSPoint(x: 45, y: 182), NSFont(name: "Georgia-Italic", size: 17) ?? .systemFont(ofSize: 17), 0x3B4653)
+        BrandMark.draw(in: CGRect(x: 45, y: 182, width: 58, height: 19), color: color(0x3B4653))
         NSGraphicsContext.restoreGraphicsState()
 
         drawInlet()
@@ -330,8 +330,8 @@ enum MachineArtwork {
             let bezel = rounded(CGRect(x: 0.5, y: 0.5, width: 41, height: 17), 4)
             gradient(bezel, [(0x8E9CA6, 1), (0xF4F7F9, 1)], -90)
             let screen = rounded(CGRect(x: 1.6, y: 1.7, width: 38.8, height: 14.6), 2.7)
-            gradient(screen, [(0x121D1D, 1), (0x283534, 1)], -90)
-            stroke(screen, 0x40504F, 0.7, 0.5)
+            gradient(screen, [(0x172332, 1), (0x2C4054, 1)], -90)
+            stroke(screen, 0x485E75, 0.7, 0.5)
             let digits = String(format: "%04d", max(0, count))
             let pitch = min(7, 32 / CGFloat(digits.count))
             let digitWidth = pitch - 2.4
@@ -352,7 +352,7 @@ enum MachineArtwork {
                     (CGPoint(x:x+0.6,y:4.8), CGPoint(x:x+w-0.6,y:4.8))]
                 let active = segments[character.wholeNumberValue ?? 0]
                 for (segment, points) in endpoints.enumerated() {
-                    line(points.0, points.1, color: powered ? 0xBAE5CE : 0xA6BEB3,
+                    line(points.0, points.1, color: powered ? 0xC5E4FA : 0xB2C1CD,
                          alpha: active.contains(segment) ? 0.95 : 0.065, width: 0.7)
                 }
             }
@@ -372,17 +372,17 @@ enum MachineArtwork {
         }
     }
 
-    /// Silver rim, inset track, and a restrained mint tint when powered.
+    /// Silver rim, inset track, and a soft sky-blue tint when powered.
     static func switchTrack(powered: Bool) -> CGImage {
         raster(switchFrame.size) {
             let rim = rounded(CGRect(x: 0.5, y: 1.5, width: 35, height: 19), 9.5)
             gradient(rim, [(0x83939F, 1), (0xF4F8FA, 1)], -90)
             stroke(rim, 0xFFFFFF, 0.45, 0.5)
             let track = rounded(CGRect(x: 1.6, y: 2.8, width: 32.8, height: 16.4), 8.2)
-            gradient(track, powered ? [(0x759C8D, 1), (0xB8D8C7, 1)] :
+            gradient(track, powered ? [(0x7197B9, 1), (0xB9D8EE, 1)] :
                      [(0x939FA9, 1), (0xC4CDD4, 1)], -90)
-            stroke(track, powered ? 0x597D6B : 0x70808C, 0.37, 0.6)
-            line(CGPoint(x:10,y:18.6), CGPoint(x:26,y:18.6), color: 0x344B41, alpha: 0.18, width: 0.7)
+            stroke(track, powered ? 0x537C9E : 0x70808C, 0.37, 0.6)
+            line(CGPoint(x:10,y:18.6), CGPoint(x:26,y:18.6), color: 0x354D64, alpha: 0.18, width: 0.7)
         }
     }
 

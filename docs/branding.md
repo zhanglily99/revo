@@ -1,16 +1,49 @@
-# Revo app icon
+# Revo identity
 
-The app icon shows the actual product: an opaque satin-silver head above a tall liquid-glass paper bin. A sheet entering the slot and the cut ribbons inside distinguish it from a generic trash can. Highlights are restrained, with a faint mint edge tint matching the power switch. No lettermark or Apple logo is used.
+Revo uses a custom lowercase geometric wordmark. Rounded terminals and a shared
+28-unit stroke give it a soft, compact silhouette. The e forms a closed circle
+with a central crossbar. The e and o share a 74-unit centerline radius; their
+inner and outer construction circles have radii of 60 and 88 units.
 
-- Production artwork: `Resources/AppIcon.png`, with transparency outside its rounded-square tile.
-- Reference: `docs/images/on.png`, used for the machine's proportions and materials.
-- Generated with the built-in image generation tool, then converted to macOS icon sizes by `scripts/build-app.sh`.
-- The menu bar uses a separate monochrome template mark drawn in `MenuBarIcon.swift` for legibility at 18 points.
+The construction sheet exposes those circles, baselines, vertical alignments,
+and the v diagonals. These guides belong to the presentation artwork. The app
+icon and the machine use the clean wordmark without construction lines.
 
-## Generation prompt
+<img src="../Resources/Branding/Revo-Construction.svg" alt="Revo geometric logo construction on a blue gradient" width="540">
 
-Use case: logo-design. Create ONE production macOS app icon for Revo. The attached image is a reference for the actual product's silhouette and materials, NOT a screenshot to reproduce literally. The icon must clearly read as a PAPER SHREDDER, never as a letter or monogram. Design a tiny refined 2.5D paper shredder with an opaque satin-silver softly rounded upper head, a horizontal precision inlet visible on its slightly receding top plane, and a taller clear liquid-glass collection bin below, with beautifully rounded optical edges. A single white sheet is visibly being pulled downward INTO the inlet, with a few subtle short gray lines on its upper portion; several fine cut paper ribbons emerge below the head into the transparent glass bin, with a small restrained pile of strips at the bottom. These details must make the shredder action unambiguous. Preserve the broad silver head and tall glass bin proportions of the reference, simplify the reference's tiny controls to just a small pale mint switch on the upper right, omit its wordmark and digital counter. No letters at all. Face almost forward, a slightly elevated 2.5D angle showing a modest top plane, not a strong isometric tilt. Premium clear optical glass: believable refraction, rounded thickness, narrow soft edge highlights, a very faint mint edge tint, clear center with NO hard diagonal reflection or polygon highlights. The bin contains paper and air, not water. Compose this object centrally on a softly rounded-square pearl-gray icon tile, its edges subtly darker than the satin metal for separation. 1024x1024 square canvas, true transparent pixels outside the tile and subtle grounding shadow; tile fills approximately 88 percent of canvas, complete object including entering sheet occupies 74 percent of tile height. Mature, understated, tactile, polished optical-material rendering, clean controlled studio lighting from upper left. Excellent readable silhouette at 32px, no unnecessary tiny ornament. Avoid R monograms, any typography, Apple logo, trash/recycle symbols, extra objects, rainbows, vivid blue or purple, candy jelly, chrome mirror finish, water waves, sprawling confetti, collage, watermark, checkerboard backgrounds. Output the finished icon, not a presentation mockup.
+## Color
 
-## Cleanup prompt
+The background blends pearl gray `#E9ECEF`, mist blue `#98AFC7`, and deep sky blue
+`#305282`. The white wordmark uses `#F8F9F7`. The powered switch blends `#7197B9`
+and `#B9D8EE`, while the counter uses pale blue `#C5E4FA` on a slate-blue display.
+The off switch stays neutral silver-gray.
 
-Precise cleanup edit of this finished macOS icon. Keep the paper shredder, all its materials, the white paper entering the slot, cut paper ribbons, mint power switch, composition, proportions, the pearl silver rounded-square tile, the studio lighting, and every detail INSIDE the tile unchanged. Change ONLY the outer cutout quality: remove all stray white specks and cloudy fragments outside and above the rounded-square tile. Outside the smooth continuous rounded-square silhouette there must be genuinely transparent pixels, with only a subtle uniform short soft grounding shadow immediately beneath the tile. The top perimeter especially must be smooth, immaculate and free of any white noise above it. No added letters or other elements. A production-ready clean alpha silhouette, a completely transparent outer margin on all four sides, at least 5% empty transparent margin around the complete tile. Retain the icon itself exactly.
+Built-in demo photos and audio waveforms use the same sky-blue family. Actual
+image thumbnails retain the colors of the original file.
+
+## Assets
+
+- `Sources/Revo/BrandMark.swift`: shared vector geometry for the machine and exports.
+- `Resources/AppIcon.png`: production 1024-pixel app icon, transparent outside its tile.
+- `Resources/Branding/`: editable SVG wordmarks, app icon, and portrait presentations.
+- `scripts/render-branding.swift`: deterministic SVG and PNG exporter.
+- `Sources/Revo/MenuBarIcon.swift`: the existing monochrome machine silhouette for
+  the menu bar, where a four-letter wordmark would be too small.
+
+The wordmark is outlined vector artwork, not a font dependency or an AI-generated
+bitmap. All versions are derived from the same geometry.
+
+## Regenerate
+
+```sh
+xcrun swiftc -O -parse-as-library Sources/Revo/BrandMark.swift \
+  scripts/render-branding.swift -o .build/render-branding
+.build/render-branding build/branding
+cp build/branding/Revo-AppIcon.png Resources/AppIcon.png
+cp build/branding/*.svg Resources/Branding/
+cp build/branding/Revo-Wordmark-Navy.png Resources/Branding/
+./scripts/build-app.sh
+```
+
+The build script creates the macOS icon size variants. The installer background
+also uses the exported geometric wordmark and sky-blue accents.

@@ -12,7 +12,7 @@ for scale in [1, 2] {
     NSColor(calibratedWhite: 0.96, alpha: 1).setFill()
     CGRect(origin: .zero, size: size).fill()
     let wash = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
-                          colors: [NSColor(calibratedRed: 0.79, green: 0.88, blue: 0.84, alpha: 0.35).cgColor,
+                          colors: [NSColor(calibratedRed: 0.72, green: 0.83, blue: 0.92, alpha: 0.35).cgColor,
                                    NSColor.white.withAlphaComponent(0).cgColor] as CFArray,
                           locations: [0, 1])!
     ctx.drawRadialGradient(wash, startCenter: CGPoint(x: 520, y: 30), startRadius: 0,
@@ -22,14 +22,14 @@ for scale in [1, 2] {
         let width = (text as NSString).size(withAttributes: attributes).width
         (text as NSString).draw(at: CGPoint(x: (size.width - width) / 2, y: y), withAttributes: attributes)
     }
-    centered("Revo", y: 332, font: NSFont(name: "Georgia-Italic", size: 34)!,
-             color: NSColor(calibratedRed: 0.24, green: 0.29, blue: 0.32, alpha: 1))
+    let wordmark = NSImage(contentsOfFile: "Resources/Branding/Revo-Wordmark-Navy.png")!
+    wordmark.draw(in: CGRect(x: 255, y: 332, width: 130, height: 38))
     let arrow = NSBezierPath()
     arrow.move(to: CGPoint(x: 293, y: 210)); arrow.line(to: CGPoint(x: 347, y: 210))
     arrow.move(to: CGPoint(x: 335, y: 221)); arrow.line(to: CGPoint(x: 347, y: 210))
     arrow.line(to: CGPoint(x: 335, y: 199))
     arrow.lineWidth = 1.6; arrow.lineCapStyle = .round; arrow.lineJoinStyle = .round
-    NSColor(calibratedRed: 0.51, green: 0.59, blue: 0.56, alpha: 1).setStroke(); arrow.stroke()
+    NSColor(calibratedRed: 0.47, green: 0.60, blue: 0.72, alpha: 1).setStroke(); arrow.stroke()
     centered("Drag Revo to Applications.", y: 91, font: .systemFont(ofSize: 17, weight: .medium),
              color: NSColor(calibratedWhite: 0.30, alpha: 1))
     centered("macOS 14 or later  ·  Apple silicon & Intel", y: 61,

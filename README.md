@@ -1,7 +1,7 @@
 # Revo
 
 <p align="center">
-  <img src="Resources/AppIcon.png" alt="Revo's silver and liquid-glass paper shredder icon" width="128">
+  <img src="Resources/AppIcon.png" alt="Revo geometric wordmark on a sky-blue gradient" width="128">
 </p>
 
 A tiny native macOS paper shredder with a silver head, clear glass body, and tactile controls. Switch it on, drop a file into the slot, and watch the rollers draw it in. Your file moves to macOS Trash and remains recoverable.
@@ -16,7 +16,7 @@ This preview uses demonstration sheets. The GIF is silent; Revo includes switch 
 
 ## The little machine
 
-A solid silver head, clear glass enclosure, layered edge reflections, and a compact tactile power switch. Its raised silver thumb slides into a soft mint-green track when on and returns to silver-gray when off. A recessed seven-segment display beside it shows the number of files successfully recycled today, including across app launches. Undo reduces the count; demos and failed operations never increase it. A gently elevated viewpoint reveals the receding top plane and a continuous metal front face. The metal head has softly rolled shoulders and a continuous front face above a taller glass enclosure. Larger file previews ease toward the inlet, catch briefly in the rollers, then feed in slowly at a steady pace. A curved, segmented paper surface compresses and darkens near the opening to give the bite depth. The roller catch and motor sounds follow those phases; heavier files and folder stacks feed more slowly. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Its side walls and floor recede toward the same vanishing point as the metal top, and paper scraps settle across that floor. Reduce Transparency replaces the glass with a solid native backdrop. The capsule inlet uses a narrow upper shadow, blue-gray interior gradient, and a soft silver reflection along the lower lip. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. The only branding is Revo, set in Georgia Italic. The compact desktop panel measures 216 × 297 points.
+A solid silver head, clear glass enclosure, layered edge reflections, and a compact tactile power switch. Its raised silver thumb slides into a soft sky-blue track when on and returns to silver-gray when off. A recessed seven-segment display beside it shows the number of files successfully recycled today, including across app launches. Undo reduces the count; demos and failed operations never increase it. A gently elevated viewpoint reveals the receding top plane and a continuous metal front face. The metal head has softly rolled shoulders and a continuous front face above a taller glass enclosure. Larger file previews ease toward the inlet, catch briefly in the rollers, then feed in slowly at a steady pace. A curved, segmented paper surface compresses and darkens near the opening to give the bite depth. The roller catch and motor sounds follow those phases; heavier files and folder stacks feed more slowly. The entire head, including its bevels and end caps, is opaque aluminum. The lower enclosure combines subtle native desktop diffusion with a clear center, curved reflections, and a thick liquid-glass rim. Its side walls and floor recede toward the same vanishing point as the metal top, and paper scraps settle across that floor. Reduce Transparency replaces the glass with a solid native backdrop. The capsule inlet uses a narrow upper shadow, blue-gray interior gradient, and a soft silver reflection along the lower lip. The metal inlet and glass highlights are drawn in code with AppKit. Core Animation handles the paper feed, cutting, falling scraps, and subtle mechanical feedback. A custom geometric Revo wordmark uses rounded strokes and a closed circular e; the same mark appears on the sky-gradient app icon. The compact desktop panel measures 216 × 297 points.
 
 - Documents become narrow paper strips.
 - Photos use a thumbnail and break into confetti.
@@ -110,7 +110,7 @@ python3 -m venv .build/packaging-venv
 
 The package includes a Retina installation background and an Applications shortcut. Artifacts are written to `build/release/`: the versioned DMG, `LICENSE.txt`, and `SHA256SUMS.txt`. The script verifies the disk image, app signature, and both binary architectures. It refuses to overwrite an existing versioned DMG. Packaging tools are build-time dependencies only.
 
-See [the icon design record](docs/branding.md) for the artwork source and generation prompts.
+See [the icon design record](docs/branding.md) for the vector construction, color palette, and regeneration commands.
 
 ## Verify and preview
 
@@ -133,6 +133,7 @@ To regenerate the looping README demonstration, run `./scripts/render-demo.sh` w
 | `MenuBarIcon.swift` | Monochrome template icon for light and dark menu bars |
 | `RevoPanel.swift` | Transparent floating panel and saved position |
 | `RevoView.swift` | Drag and drop, animation queue, menus, and feedback |
+| `BrandMark.swift` | Shared rounded geometric wordmark |
 | `MachineArtwork.swift` | Translucent enclosure, metal inlet, and shutter |
 | `GlassBackdrop.swift` | Native diffusion inside the lower glass and accessibility fallback |
 | `PaperFeed.swift` | Roller catch, curved paper surface, and slow feed timing |
