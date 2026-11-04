@@ -231,7 +231,7 @@ enum MachineArtwork {
         context.endTransparencyLayer()
         context.restoreGState()
         line(CGPoint(x: 23.5, y: 169.5), CGPoint(x: 216.5, y: 169.5), color: 0x6F8192, alpha: 0.38, width: 0.7)
-        BrandMark.draw(in: CGRect(x: 45, y: 182, width: 58, height: 19), color: color(0x3B4653))
+        text("Revo", NSPoint(x: 45, y: 182), NSFont(name: "Georgia-Italic", size: 17) ?? .systemFont(ofSize: 17), 0x3B4653)
         NSGraphicsContext.restoreGraphicsState()
 
         drawInlet()

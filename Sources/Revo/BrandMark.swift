@@ -13,7 +13,9 @@ enum BrandMark {
                    control2: CGPoint(x: 51.131, y: 166))
 
         let e = CGMutablePath()
-        e.addEllipse(in: CGRect(x: 123, y: 18, width: 148, height: 148))
+        // A small lower-right aperture keeps the rounded letter recognizable as e.
+        e.addArc(center: CGPoint(x: 197, y: 92), radius: 74,
+                 startAngle: 0, endAngle: 325 * .pi / 180, clockwise: false)
         e.move(to: CGPoint(x: 123, y: 92)); e.addLine(to: CGPoint(x: 271, y: 92))
 
         let v = CGMutablePath()

@@ -1,13 +1,14 @@
 # Revo identity
 
 Revo uses a custom lowercase geometric wordmark. Rounded terminals and a shared
-28-unit stroke give it a soft, compact silhouette. The e forms a closed circle
-with a central crossbar. The e and o share a 74-unit centerline radius; their
+28-unit stroke give it a soft, compact silhouette. The e has a small lower-right aperture
+and a central crossbar. The e and o share a 74-unit centerline radius; their
 inner and outer construction circles have radii of 60 and 88 units.
 
 The construction sheet exposes those circles, baselines, vertical alignments,
 and the v diagonals. These guides belong to the presentation artwork. The app
-icon and the machine use the clean wordmark without construction lines.
+icon uses the clean wordmark without construction lines. The machine retains
+its original Georgia Italic Revo lettering.
 
 <img src="../Resources/Branding/Revo-Construction.svg" alt="Revo geometric logo construction on a blue gradient" width="540">
 
@@ -23,7 +24,7 @@ image thumbnails retain the colors of the original file.
 
 ## Assets
 
-- `Sources/Revo/BrandMark.swift`: shared vector geometry for the machine and exports.
+- `Sources/Revo/BrandMark.swift`: vector geometry for the app icon and branding exports.
 - `Resources/AppIcon.png`: production 1024-pixel app icon, transparent outside its tile.
 - `Resources/Branding/`: editable SVG wordmarks, app icon, and portrait presentations.
 - `scripts/render-branding.swift`: deterministic SVG and PNG exporter.
