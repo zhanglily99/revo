@@ -7,12 +7,16 @@
 A tiny native macOS paper shredder with a silver head, clear glass body, and tactile controls. Switch it on, drop a file into the slot, and watch the rollers draw it in. Your file moves to macOS Trash and remains recoverable.
 
 <p align="center">
-  <img src="docs/images/demo.gif" alt="Revo switches on, draws a photo through its rollers, cuts it into paper scraps, moves and shakes with loose paper swaying inside, then switches off" width="560">
+  <a href="https://github.com/zhanglily99/revo/releases/download/v0.4.2/Revo-Demo.mp4">
+    <img src="docs/images/demo.gif" alt="Revo on a clean blue gradient: switch on, feed a document and a photo, shred, move and shake the loose paper, then switch off" width="420" height="560">
+  </a>
 </p>
 
 **Switch on → feed a file → shred → move and shake → switch off.**
 
-This preview uses demonstration sheets. The GIF is silent; Revo includes switch clicks, motor sounds, and paper rustling.
+[Watch the full demo with sound](https://github.com/zhanglily99/revo/releases/download/v0.4.2/Revo-Demo.mp4) · [Watch the logo entrance](https://github.com/zhanglily99/revo/releases/download/v0.4.2/Revo-Logo-Entrance.mp4)
+
+The 14-second portrait demo uses Revo's native artwork and paper physics on a clean blue gradient. Its staged files demonstrate the interaction without recycling personal documents. The looping preview above is silent; the full video includes switch clicks, roller and motor sounds, and paper rustling that follows the movement.
 
 ## The little machine
 
@@ -123,7 +127,9 @@ The self-test checks shortcut conflicts, preserved bindings, recording suspensio
 
 Preview mode renders off, on, roller-catch, feeding, and finished screenshots using demo sheets. It does not recycle any files.
 
-To regenerate the looping README demonstration, run `./scripts/render-demo.sh` with Python 3 and Pillow installed. The capture uses the app's actual view, feed animations, and movement physics at 20 frames per second. Its frame files remain in `build/demo-frames.*` for review; the optimized GIF is written to `docs/images/demo.gif`.
+The README preview is a 420 × 560, 20 fps GIF derived from the [clean-gradient video attached to v0.4.2](https://github.com/zhanglily99/revo/releases/download/v0.4.2/Revo-Demo.mp4). The full video is 1080 × 1440 at 60 fps with stereo sound.
+
+For a direct capture of the app's actual view, run `./scripts/render-demo.sh` with Python 3 and Pillow installed. It records the feed animations and movement physics at 20 fps, retains frames in `build/demo-frames.*`, and overwrites `docs/images/demo.gif` with the app capture. That capture has a different layout from the selected clean-gradient portrait video.
 
 ## Inside the app
 
